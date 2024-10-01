@@ -45,7 +45,6 @@ roles_creating(int num, bool extra, std::unordered_map<int, SharedPtr<Role>>& ro
         good_quan = num - 6 - evil_quan;
         evil_quan -= 1;   // for Lier
     }
-    std::cout << evil_quan << " " << good_quan << std::endl;
     std::uniform_int_distribution<> distrib(0, roles_quan - 1);
     for (int i = 1; i < number_roles; ++i) {
         while (true) {
