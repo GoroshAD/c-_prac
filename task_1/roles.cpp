@@ -3,6 +3,7 @@
 #include <vector>
 #include <utility>
 #include <unordered_map>
+#include <string>
 
 #include "shared_ptr.cpp"
 
@@ -11,299 +12,164 @@ std::uniform_int_distribution<> distribution;   // global distribution
 
 class Role {
 public:
-    Role() : sleep(true), evil(false) {}
-    Role(bool sleep, bool evil) : sleep(sleep), evil(evil) {}
-
-    ~Role() {
-        sleep = true;
-        evil = false;
-    }
-
-    bool sleep;
-    bool evil;
+    virtual ~Role() = default;
+    virtual void act(std::unordered_map<int, SharedPtr<Role>> &roles) const = 0;
+    virtual void vote(std::unordered_map<int, SharedPtr<Role>> &roles) const = 0;
+    virtual void set_role(int num) const = 0;
+    virtual std::string get_role() const = 0;
 };
 
 //---//
 
-template <typename T>
-class Holder : Role {
+class Holder : public Role {
 public:
-    Holder() : Role(false, false), living(nullptr), roles(nullptr) {}
-    Holder(T *ptr, T *ptr2) : Role(false, false), living(ptr), roles(ptr2) {}
-
-    ~Holder() {
-        if (std::is_array_v<T>) {
-            delete[] living;
-        } else {
-            delete living;
-        }
+    int number = -1;
+    std::string role_name = "";
+    bool alive = true;
+    void act(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void vote(std::unordered_map<int, SharedPtr<Role>> &roles) const override {
+        // here'll be walking around the SharedPtr<Role>s
     }
-
-    T *living;
-    T *roles;
-};
-
-class Doctor : Role {
-public:
-    Doctor() : Role(false, false), prev(0), target(0) {}
-
-    ~Doctor() {}
-
-    int
-    act() {   // simple realization
-        target = distribution(generator);
-        while (target == prev or false) {   // here is also Holders answer that target is alive or not
-            target = distribution(generator);
-        }
-        prev = target;
-        return target;
+    void set_role(int num) const override {
+        const_cast<Holder*>(this)->number = num;
+        const_cast<Holder*>(this)->role_name = "Holder";
     }
-
-    int
-    vote() {
-        int target = distribution(generator);
-        while (false) {   // is it alive
-            target = distribution(generator);
-        }
-        return target;
-    }
-
-    int prev;
-    int target;
-};
-
-template <typename T>
-class Sherif : Role {
-public:
-    Sherif() : Role(false, false), target(0), memory(nullptr) {}
-    Sherif(T *ptr) : Role(false, false), target(0), memory(ptr) {}
-
-    ~Sherif() {
-        if (std::is_array_v<T>) {
-            delete[] memory;
-        } else {
-            delete memory;
-        }
-    }
-
-    int
-    act() {
-        target = distribution(generator);
-
-        // smth adding to memory
-
-        return target;
-    }
-
-    int
-    vote() {
-        int target = distribution(generator);
-        while (false) {   // is it alive   +   memory
-            target = distribution(generator);
-        }
-        return target;
-    }
-
-    int target;
-    T *memory;
-};
-
-template <typename T>
-class Mafia : Role {
-public:
-    Mafia() : Role(false, true), target(0), allies(nullptr) {}
-    Mafia(T *ptr) : Role(false, true), target(0), allies(ptr) {}
-
-    ~Mafia() {
-        if (std::is_array_v<T>) {
-            delete[] allies;
-        } else {
-            delete allies;
-        }
-    }
-
-    int
-    act() {
-        target = distribution(generator);
-        
-        // smth
-
-        return target;
-    }
-
-    int
-    vote() {
-        int target = distribution(generator);
-        while (false) {   // is it alive   +   not evil 
-            target = distribution(generator);
-        }
-        return target;
-    }
-
-    int target;
-    T *allies;
-};
-
-class Villager : Role {
-public:
-    Villager() : Role(true, false) {}
-    
-    ~Villager() {}
-
-    int
-    vote() {
-        int target = distribution(generator);
-        while (false) {   // is it alive
-            target = distribution(generator);
-        }
-        return target;
+    std::string get_role() const override {
+        return const_cast<Holder*>(this)->role_name;
     }
 };
 
-class Maniac : Role {
+class Doctor : public Role {
+    bool sleep = false;
+    bool evil = false;
+    int target = -1;
+    int prev = -1;
+    int number = -1;
+    std::string role_name = "";
+    bool alive = true;
+
+    void act(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void vote(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void set_role(int num) const override {
+        const_cast<Doctor*>(this)->sleep = false;
+        const_cast<Doctor*>(this)->evil = false;
+        const_cast<Doctor*>(this)->number = num;
+        const_cast<Doctor*>(this)->role_name = "Doctor";
+    }
+    std::string get_role() const override {
+        return const_cast<Doctor*>(this)->role_name;
+    }
+};
+
+class Sherif : public Role {
 public:
-    Maniac() : Role(false, false), target(0) {}
+    bool sleep = false;
+    bool evil = false;
+    int target = -1;
+    int number = -1;
+    std::string role_name = "";
+    bool alive = true;
 
-    ~Maniac() {}
-
-    int
-    act() {
-        target = distribution(generator);
-        while (false) {   // holder's answer is target alive now
-            target = distribution(generator);
-        }
-        return target;
+    void act(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void vote(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void set_role(int num) const override {
+        const_cast<Sherif*>(this)->sleep = false;
+        const_cast<Sherif*>(this)->evil = false;
+        const_cast<Sherif*>(this)->number = num;
+        const_cast<Sherif*>(this)->role_name = "Sherif";
     }
-
-    int
-    vote() {
-        int target = distribution(generator);
-        while (false) {   // is it alive
-            target = distribution(generator);
-        }
-        return target;
+    std::string get_role() const override {
+        return const_cast<Sherif*>(this)->role_name;
     }
+};
 
-    int target;
+class Mafia : public Role {
+public:
+    bool sleep = false;
+    bool evil = false;
+    int target = -1;
+    int number = -1;
+    std::string role_name = "";
+    bool alive = true;
+
+    void act(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void vote(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void set_role(int num) const override {
+        const_cast<Mafia*>(this)->sleep = false;
+        const_cast<Mafia*>(this)->evil = true;
+        const_cast<Mafia*>(this)->role_name = "Mafia";
+        const_cast<Mafia*>(this)->number = num;
+    }
+    std::string get_role() const override {
+        return const_cast<Mafia*>(this)->role_name;
+    }
+};
+
+class Villager : public Role {
+public:
+    bool sleep = false;
+    bool evil = false;
+    int number = -1;
+    std::string role_name = "";
+    bool alive = true;
+
+    void act(std::unordered_map<int, SharedPtr<Role>> &roles) const override {return;}
+    void vote(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void set_role(int num) const override {
+        const_cast<Villager*>(this)->sleep = true;
+        const_cast<Villager*>(this)->evil = false;
+        const_cast<Villager*>(this)->number = num;
+        const_cast<Villager*>(this)->role_name = "Villager";
+    }
+    std::string get_role() const override {
+        return const_cast<Villager*>(this)->role_name;
+    }
+};
+
+class Maniac : public Role {
+public:
+    bool sleep = false;
+    bool evil = false;
+    int target = -1;
+    int number = -1;
+    std::string role_name = "";
+    bool alive = true;
+
+    void act(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void vote(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void set_role(int num) const override {
+        const_cast<Maniac*>(this)->sleep = false;
+        const_cast<Maniac*>(this)->evil = false;
+        const_cast<Maniac*>(this)->number = num;
+        const_cast<Maniac*>(this)->role_name = "Maniac";
+    }
+    std::string get_role() const override {
+        return const_cast<Maniac*>(this)->role_name;
+    }
 };
 
 // extra
 
-class Lier : Role {
+class Lier : public Role {
 public:
-    Lier() : Role(false, true), target(0) {}
-
-    ~Lier() {}
-
-    int
-    act() {
-        target = distribution(generator);
-        while (false) {   // is it alive
-            target = distribution(generator);
-        }
-        return target;
-    }
-
-    int
-    vote() {
-        int target = distribution(generator);
-        while (false) {   // is it alive
-            target = distribution(generator);
-        }
-        return target;
-    }
-
-    int target;
+    void act(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void vote(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void set_role(int num) const override {}
+    std::string get_role() const override {return "";}
 };
 
-class Drunker : Role {
+class Drunker : public Role {
 public:
-    Drunker() : Role(false, false), target(0), strike(0) {}
-
-    ~Drunker() {}
-
-    int
-    act() {
-        std::uniform_int_distribution<> distrib(0, 1);
-        if (strike != 2 && distrib(generator)) {
-            target = distribution(generator);
-            while (false) {   // is it alive
-                target = distribution(generator);
-            }
-            strike++;
-            return target;
-        } else {
-            strike = 0;
-        }
-        return -1;
-    }
-
-    int
-    vote() {
-        int target = distribution(generator);
-        while (false) {   // is it alive
-            target = distribution(generator);
-        }
-        return target;
-    }
-
-    int target;
-    int strike;
+    void act(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void vote(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void set_role(int num) const override {}
+    std::string get_role() const override {return "";}
 };
 
-template <typename T>
-class Bully : Role {
+class Bully : public Role {
 public:
-    Bully() : Role(false, false), target(0), memory(nullptr) {}
-    Bully(T *ptr) : Role(false, false), target(0), memory(ptr) {}
-
-    ~Bully() {
-        if (std::is_array_v<T>) {
-            delete[] memory;
-        } else {
-            delete memory;
-        }
-    }
-
-    int
-    act() {
-        int target = distribution(generator);
-        while (false) {   // is it alive   +   not in memory
-            target = distribution(generator);
-        }
-        return target;
-    }
-
-    int
-    vote() {
-        int target = distribution(generator);
-        while (false) {   // is it alive
-            target = distribution(generator);
-        }
-        return target;
-    }
-
-    int target;
-    T *memory;
-};
-
-
-
-template<typename T>
-class Player {
-public:
-    Player() : number(0), thoughts(nullptr), role(NULL) {}
-    Player(int num, SharedPtr<std::unordered_map<int, std::string>> tho, T rol) {
-        number = num;
-        thoughts = tho;
-        role = rol;
-    }
-
-    ~Player() {
-        delete thoughts;
-    }
-
-    int number;
-    SharedPtr<std::unordered_map<int, std::string>> thoughts;
-    T role;
+    void act(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void vote(std::unordered_map<int, SharedPtr<Role>> &roles) const override {}
+    void set_role(int num) const override {}
+    std::string get_role() const override {return "";}
 };

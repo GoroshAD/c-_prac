@@ -1,9 +1,10 @@
+#include <iostream>
+
 template <typename T>
 class SharedPtr {
 private:
     T* ptr;
     int* ref_count;
-
 public:
     //constructors
     SharedPtr() : ptr(nullptr), ref_count(nullptr) {}
@@ -32,35 +33,12 @@ public:
     SharedPtr& operator=(const SharedPtr& other) {
         if (this != &other) {
             if (ptr && --(*ref_count) == 0) {
-                std::cout << "here" << std::endl;
-                if (std::is_array_v<T>) {
-                    delete[] ptr;
-                } else {
-                    delete ptr;
-                }
+                delete ptr;
                 delete ref_count;
             }
             ptr = other.ptr;
             ref_count = other.ref_count;
-            other.ptr = nullptr;
-            other.ref_count = nullptr;
-        }
-        return *this;
-    }
-    SharedPtr& operator=(SharedPtr&& other) {
-        if (this != &other) {
-        if (ptr && --(*ref_count) == 0) {
-            if (std::is_array_v<T>) {
-                delete[] ptr;
-            } else {
-                delete ptr;
-            }
-            delete ref_count;
-        }
-        ptr = other.ptr;
-        ref_count = other.ref_count;
-        other.ptr = nullptr;
-        other.ref_count = nullptr;
+            ++(*ref_count);
         }
         return *this;
     }
