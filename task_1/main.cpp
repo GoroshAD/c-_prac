@@ -35,6 +35,7 @@ std::vector<std::pair<std::string, bool>> extra_roles = {{"Lier", false}, \
                                                          {"Bully", false}, \
                                                          {"Drunker", false}};
 int player_doctors_prev = -1;
+int player_vote_target = -1;
 
 //---functions---
 void
@@ -120,7 +121,7 @@ player_night_activity(std::unordered_map<int, SharedPtr<Role>>& roles, int num, 
             std::cout << "Please type a number of a player, which you want to check: ";
             std::cin >> tmp_target;
             while (tmp_target <= 0 || tmp_target >= num || !(*roles[tmp_target]).is_alive()) {
-                std::cout << "This playerisn't alive, please try again: ";
+                std::cout << "This player isn't alive, please try again: ";
                 std::cin >> tmp_target;
             }
             if ((*roles[tmp_target]).is_evil()) {
@@ -151,6 +152,9 @@ player_night_activity(std::unordered_map<int, SharedPtr<Role>>& roles, int num, 
                 std::cin >> tmp_target;
             }
         }
+        roles[1]->set_target(tmp_target);
+        player_doctors_prev = tmp_target;
+        std::cout << "Now it's time to have a sleep." << std::endl;
     } else if ((*roles[1]).get_role() != "Villager") {
         std::cout << "You woke up this night..." << std::endl;
         std::cout << "Choose a target, please: ";
@@ -168,7 +172,16 @@ player_night_activity(std::unordered_map<int, SharedPtr<Role>>& roles, int num, 
 }
 void
 player_day_voting(std::unordered_map<int, SharedPtr<Role>>& roles, int num, bool extra) {
-
+    if (!roles[1]->is_alive()) std::cout << "Well, yo're dead now, just watch his decision..." << std::endl;
+    int tmp_vote = -1;
+    std::cout << "Please, choose a player, which you suspect: ";
+    std::cin >> tmp_vote;
+    while (tmp_vote <= 0 || tmp_vote >= num || !roles[tmp_vote]->is_alive()) {
+        std::cout << "This player isn't alive, please select another one: ";
+        std::cin >> tmp_vote;
+    }
+    player_vote_target = tmp_vote;
+    return;
 }
 
 void
@@ -218,13 +231,13 @@ holders_night_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
     if (maniacs_target != -1 && maniacs_target != doctors_target && maniacs_target != mafias_target) {
         std::cout << "Maniac killed player number " << maniacs_target << " tonight. He was a " << (*roles[maniacs_target]).get_role() << "." << std::endl;
         (*roles[maniacs_target]).dead();
-    } else if (maniacs_target != -1 && maniacs_target != mafias_target) {
+    } else if (maniacs_target != -1 && maniacs_target != mafias_target && maniacs_target == doctors_target) {
         std::cout << "Someone tried to kill player " << mafias_target << " tonight. Luckily, Doctor saved him from his death." << std::endl;
     }
     if (sherifs_target != -1 && sherifs_target != doctors_target && maniacs_target != sherifs_target) {
         std::cout << "Sherif killed player number " << sherifs_target << " tonight. He was a " << (*roles[sherifs_target]).get_role() << "." << std::endl;
         (*roles[sherifs_target]).dead();
-    } else if (sherifs_target != -1 && sherifs_target != maniacs_target) {
+    } else if (sherifs_target != -1 && sherifs_target != maniacs_target && doctors_target == sherifs_target) {
         std::cout << "Someone tried to kill player " << mafias_target << " tonight. Luckily, Doctor saved him from his death." << std::endl;
     }
     if (mafias_target != doctors_target && maniacs_target != doctors_target && sherifs_target != doctors_target && doctors_target != -1) {
@@ -236,6 +249,28 @@ holders_night_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
 void
 holders_day_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
 {
+    std::cout << "The judge stood up and announced the verdict..." << std::endl;
+    std::unordered_map<int, int> votes;
+    for (int i = 1; i < num; ++i) {
+        if (!roles[i]->is_alive()) continue;
+        if (votes[roles[i]->get_vote_target()] && votes[roles[i]->get_vote_target()] >= 1) {
+            votes[roles[i]->get_vote_target()] += 1;
+        } else {
+            votes[roles[i]->get_vote_target()] = 1;
+        }
+    }
+
+    int maxx = -1;
+    int max_index = -1;
+    for (auto i : votes) {
+        if (i.second > maxx) {
+            maxx = i.second;
+            max_index = i.first;
+        }
+    }
+
+    std::cout << "To the jail player " << max_index << " was sent. He was " << roles[max_index]->get_role() << " by the way." << std::endl;
+    roles[max_index]->dead();
     return;
 }
 
@@ -282,6 +317,23 @@ day_is_coming(std::unordered_map<int, SharedPtr<Role>>& roles, int num, bool ext
         if ((*roles[i]).is_alive()) alive = "alive";
         std::cout << i << " " << alive << std::endl;
     }
+    std::cout << "The voting is starting..." << std::endl;
+    std::vector<std::future<void>> futures;
+    
+    for (const auto& [i, bot] : roles) {
+        if (player && i == 1) {
+            player_day_voting(roles, num, extra); 
+        } else {
+            futures.push_back(std::async(std::launch::async, [&]() {
+                Action action = bot->vote(roles, num, i);
+                action.handle.resume();
+            }));
+        }
+    }
+    for (auto& future : futures) {
+        future.get();
+    }
+    futures.clear();
 
     // holders time
     holders_day_checker(roles, num);
@@ -324,7 +376,6 @@ are_we_finished(std::unordered_map<int, SharedPtr<Role>>& roles, int num, bool e
 void
 finishing_and_results(std::unordered_map<int, SharedPtr<Role>>& roles, bool extra, bool player)
 {
-    std::cout << "finishing" << std::endl;
     switch (result[0]) {
         case 'M':
             std::cout << "Everybody will remember the day, when Mafia gets its victory and rules the city!" << std::endl;
@@ -408,9 +459,9 @@ main(int argc, char* argv[]) {
     roles_creating(number_players, extra, roles);
     // now all Roles have their roles
 
-    for (auto i: roles) {
+    /*for (auto i: roles) {
         std::cout << i.first << " " << (*i.second).get_role() << std::endl;
-    }
+    }*/
 
     // start of the game
     if (player) {
