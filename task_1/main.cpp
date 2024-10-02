@@ -35,7 +35,18 @@ std::vector<std::pair<std::string, bool>> extra_roles = {{"Lier", false}, \
                                                          {"Bully", false}, \
                                                          {"Drunker", false}};
 int player_doctors_prev = -1;
-int player_vote_target = -1;
+std::unordered_map<int, std::string> phrases = {
+                                            {0, "Hmm... I really think it is "},
+                                            {1, "Well well well... "},
+                                            {2, "DEFENETLY "},
+                                            {3, "You know... I think i've heard something tonight from "},
+                                            {4, "I know, that this is "},
+                                            {5, "Maaaaaybe "},
+                                            {6, "I don't want to vote... But okay, "},
+                                            {7, "It. Was. "},
+                                            {8, "Yeah, yeah, "},
+                                            {9, "We all know, that this is "}
+};
 
 //---functions---
 void
@@ -172,7 +183,10 @@ player_night_activity(std::unordered_map<int, SharedPtr<Role>>& roles, int num, 
 }
 void
 player_day_voting(std::unordered_map<int, SharedPtr<Role>>& roles, int num, bool extra) {
-    if (!roles[1]->is_alive()) std::cout << "Well, yo're dead now, just watch his decision..." << std::endl;
+    if (!roles[1]->is_alive()) {
+        std::cout << "Well, you're dead now, just watch judge's decision..." << std::endl;
+        return;
+    }
     int tmp_vote = -1;
     std::cout << "Please, choose a player, which you suspect: ";
     std::cin >> tmp_vote;
@@ -180,7 +194,7 @@ player_day_voting(std::unordered_map<int, SharedPtr<Role>>& roles, int num, bool
         std::cout << "This player isn't alive, please select another one: ";
         std::cin >> tmp_vote;
     }
-    player_vote_target = tmp_vote;
+    roles[1]->set_vote_target(tmp_vote);
     return;
 }
 
@@ -249,16 +263,19 @@ holders_night_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
 void
 holders_day_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
 {
-    std::cout << "The judge stood up and announced the verdict..." << std::endl;
     std::unordered_map<int, int> votes;
+    std::uniform_int_distribution<> distrib(0, 9);
     for (int i = 1; i < num; ++i) {
         if (!roles[i]->is_alive()) continue;
+        int phrase_num = distrib(generator);
+        std::cout << "Player " << i << " says: " << phrases[phrase_num] << roles[i]->get_vote_target() << std::endl;
         if (votes[roles[i]->get_vote_target()] && votes[roles[i]->get_vote_target()] >= 1) {
             votes[roles[i]->get_vote_target()] += 1;
         } else {
             votes[roles[i]->get_vote_target()] = 1;
         }
     }
+    std::cout << "The judge stood up and announced the verdict..." << std::endl;
 
     int maxx = -1;
     int max_index = -1;
@@ -278,7 +295,7 @@ void
 night_is_coming(std::unordered_map<int, SharedPtr<Role>>& roles, int num, bool extra, bool player) 
 {
     std::cout << "The night is coming... The city goes to sleep..." << std::endl;
-    for (int i = 0; i < num; ++i) {
+    for (int i = 1; i < num; ++i) {
         std::string alive = "not alive";
         if ((*roles[i]).is_alive()) alive = "alive";
         std::cout << i << " " << alive << std::endl;
@@ -312,7 +329,7 @@ void
 day_is_coming(std::unordered_map<int, SharedPtr<Role>>& roles, int num, bool extra, bool player)
 {
     std::cout << "The day is coming... Good morning, our citizens!" << std::endl;
-    for (int i = 0; i < num; ++i) {
+    for (int i = 1; i < num; ++i) {
         std::string alive = "not alive";
         if ((*roles[i]).is_alive()) alive = "alive";
         std::cout << i << " " << alive << std::endl;

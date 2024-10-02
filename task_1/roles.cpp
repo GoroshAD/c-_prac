@@ -40,6 +40,7 @@ public:
     virtual void set_target(int target) const = 0;
     virtual int get_target() const = 0;
     virtual int get_vote_target() const = 0;
+    virtual void set_vote_target(int target) const = 0;
     virtual void dead() const = 0;
 };
 
@@ -73,6 +74,7 @@ public:
         return false;
     }
     void set_target(int target) const override {}
+    void set_vote_target(int target) const override {}
     int get_target() const override {
         return const_cast<Holder*>(this)->target;
     }
@@ -129,6 +131,9 @@ class Doctor : public Role {
     }
     int get_vote_target() const override {
         return const_cast<Doctor*>(this)->vote_target;
+    }
+    void set_vote_target(int target) const override {
+        const_cast<Doctor*>(this)->vote_target = target;
     }
     void dead() const override {
         const_cast<Doctor*>(this)->alive = false;
@@ -192,6 +197,9 @@ public:
     int get_vote_target() const override {
         return const_cast<Sherif*>(this)->vote_target;
     }
+    void set_vote_target (int target) const override {
+        const_cast<Sherif*>(this)->vote_target = target;
+    }
     void dead() const override {
         const_cast<Sherif*>(this)->alive = false;
     }
@@ -243,6 +251,9 @@ public:
     int get_vote_target() const override {
         return const_cast<Mafia*>(this)->vote_target;
     }
+    void set_vote_target (int target) const override {
+        const_cast<Mafia*>(this)->vote_target = target;
+    }
     void dead() const override {
         const_cast<Mafia*>(this)->alive = false;
     }
@@ -288,6 +299,9 @@ public:
     }
     int get_vote_target() const override {
         return const_cast<Villager*>(this)->vote_target;
+    }
+    void set_vote_target (int target) const override {
+        const_cast<Villager*>(this)->vote_target = target;
     }
     void dead() const override {
         const_cast<Villager*>(this)->alive = false;
@@ -340,6 +354,9 @@ public:
     int get_vote_target() const override {
         return const_cast<Maniac*>(this)->vote_target;
     }
+    void set_vote_target (int target) const override {
+        const_cast<Maniac*>(this)->vote_target = target;
+    }
     void dead() const override {
         const_cast<Maniac*>(this)->alive = false;
     }
@@ -373,6 +390,9 @@ public:
     int get_vote_target() const override {
         return const_cast<Lier*>(this)->vote_target;
     }
+    void set_vote_target (int target) const override {
+        const_cast<Lier*>(this)->vote_target = target;
+    }
     void dead() const override {
         const_cast<Lier*>(this)->alive = false;
     }
@@ -404,6 +424,9 @@ public:
     int get_vote_target() const override {
         return const_cast<Drunker*>(this)->vote_target;
     }
+    void set_vote_target (int target) const override {
+        const_cast<Drunker*>(this)->vote_target = target;
+    }
     void dead() const override {
         const_cast<Drunker*>(this)->alive = false;
     }
@@ -434,6 +457,9 @@ public:
     }
     int get_vote_target() const override {
         return const_cast<Bully*>(this)->vote_target;
+    }
+    void set_vote_target (int target) const override {
+        const_cast<Bully*>(this)->vote_target = target;
     }
     void dead() const override {
         const_cast<Bully*>(this)->alive = false;
