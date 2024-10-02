@@ -47,6 +47,7 @@ std::unordered_map<int, std::string> phrases = {
                                             {8, "Yeah, yeah, "},
                                             {9, "We all know, that this is "}
 };
+int liers_treatment = -1;
 
 //---functions---
 void
@@ -119,7 +120,17 @@ player_night_activity(std::unordered_map<int, SharedPtr<Role>>& roles, int num, 
         std::cout << "You're died, so you can't do anything this night." << std::endl;
         return;
     }
-    if ((*roles[1]).get_role() == "Sherif") {
+    if (roles[1]->get_role() == "Lier") {
+        std::cout << "You woke up this night..." << std::endl;
+        std::cout << "Please choose who to slander this night: ";
+        std::cin >> tmp_target;
+        while (tmp_target <= 0 || tmp_target >= num || !roles[tmp_target]->is_alive()) {
+            std::cout << "This player isn't alive, please try again: ";
+            std::cin >> tmp_target;
+        }
+        roles[1]->set_target(tmp_target);
+        liers_treatment = tmp_target;
+    } else if ((*roles[1]).get_role() == "Sherif") {
         std::cout << "You woke up this night..." << std::endl;
         std::string action;
         std::cout << "Please choose your action, type assault or check: ";
@@ -295,19 +306,26 @@ void
 night_is_coming(std::unordered_map<int, SharedPtr<Role>>& roles, int num, bool extra, bool player) 
 {
     std::cout << "The night is coming... The city goes to sleep..." << std::endl;
+    int lier = -1;
     for (int i = 1; i < num; ++i) {
         std::string alive = "not alive";
         if ((*roles[i]).is_alive()) alive = "alive";
         std::cout << i << " " << alive << std::endl;
+        if (roles[i]->get_role() == "Lier" && roles[i]->is_alive() && i != 1) lier = i;
     }
+    if (lier != -1) {
+        roles[lier]->act(roles, num, lier, liers_treatment);
+        liers_treatment = roles[lier]->get_target();
+    }
+
     std::vector<std::future<void>> futures;
     
     for (const auto& [i, bot] : roles) {
         if (player && i == 1) {
-            player_night_activity(roles, num, extra); 
-        } else {
+            player_night_activity(roles, num, extra);
+        } else if (i != lier) {
             futures.push_back(std::async(std::launch::async, [&]() {
-                Action action = bot->act(roles, num, i);
+                Action action = bot->act(roles, num, i, liers_treatment);
                 action.handle.resume();
             }));
         }
