@@ -48,6 +48,10 @@ std::unordered_map<int, std::string> phrases = {
                                             {9, "We all know, that this is "}
 };
 int liers_treatment = -1;
+int bullys_counter = 0;
+std::unordered_map<int, std::string> stickers = {
+
+};
 
 //---functions---
 void
@@ -120,7 +124,23 @@ player_night_activity(std::unordered_map<int, SharedPtr<Role>>& roles, int num, 
         std::cout << "You're died, so you can't do anything this night." << std::endl;
         return;
     }
-    if (roles[1]->get_role() == "Lier") {
+    if (roles[1]->get_role() == "Bully") {
+        std::cout << "You woke up this night..." << std::endl;
+        if (bullys_counter == num - 1) {
+            std::cout << "And went to sleep, because you've already bullied everbody!" << std::endl;
+            return;
+        }
+        std::cout << "Please choose who laugh at this night: ";
+        std::cin >> tmp_target;
+        while (tmp_target <= 0 || tmp_target >= num || !roles[tmp_target]->is_alive() || roles[tmp_target]->is_alive()) {
+            std::cout << "This player isn't alive or as bullied already, please try again: ";
+            std::cin >> tmp_target;
+        }
+        roles[1]->set_target(tmp_target);
+        roles[tmp_target]->bullys_treat();
+        bullys_counter++;
+        std::cout << "Now it's time to have a sleep." << std::endl;
+    } else if (roles[1]->get_role() == "Lier") {
         std::cout << "You woke up this night..." << std::endl;
         std::cout << "Please choose who to slander this night: ";
         std::cin >> tmp_target;
@@ -130,6 +150,7 @@ player_night_activity(std::unordered_map<int, SharedPtr<Role>>& roles, int num, 
         }
         roles[1]->set_target(tmp_target);
         liers_treatment = tmp_target;
+        std::cout << "Now it's time to have a sleep." << std::endl;
     } else if ((*roles[1]).get_role() == "Sherif") {
         std::cout << "You woke up this night..." << std::endl;
         std::string action;

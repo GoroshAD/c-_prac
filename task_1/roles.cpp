@@ -42,6 +42,9 @@ public:
     virtual int get_vote_target() const = 0;
     virtual void set_vote_target(int target) const = 0;
     virtual void dead() const = 0;
+
+    virtual void bullys_treat() const = 0;
+    virtual bool was_bully() const = 0;
 };
 
 //---//
@@ -53,6 +56,8 @@ public:
     bool alive = true;
     int target = -1;
     int vote_target = -1;
+
+    bool bullys_treatment = false;
 
     Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {
         co_return;
@@ -82,6 +87,9 @@ public:
         return const_cast<Holder*>(this)->vote_target;
     }
     void dead() const override {}
+
+    void bullys_treat() const override {}
+    bool was_bully() const override {}
 };
 
 class Doctor : public Role {
@@ -92,6 +100,8 @@ class Doctor : public Role {
     std::string role_name = "";
     bool alive = true;
     int vote_target = -1;
+
+    bool bullys_treatment = false;
 
     Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {
         if (!(*this).is_alive()) co_return;
@@ -138,6 +148,13 @@ class Doctor : public Role {
     void dead() const override {
         const_cast<Doctor*>(this)->alive = false;
     }
+
+    void bullys_treat() const override {
+        const_cast<Doctor*>(this)->bullys_treatment = true;
+    }
+    bool was_bully() const override {
+        return const_cast<Doctor*>(this)->bullys_treatment;
+    }
 };
 
 class Sherif : public Role {
@@ -149,6 +166,8 @@ public:
     std::string role_name = "";
     bool alive = true;
     int vote_target = -1;
+
+    bool bullys_treatment = false;
 
     Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {
         if (!(*this).is_alive()) co_return;
@@ -203,6 +222,13 @@ public:
     void dead() const override {
         const_cast<Sherif*>(this)->alive = false;
     }
+
+    void bullys_treat() const override {
+        const_cast<Sherif*>(this)->bullys_treatment = true;
+    }
+    bool was_bully() const override {
+        return const_cast<Sherif*>(this)->bullys_treatment;
+    }
 };
 
 class Mafia : public Role {
@@ -213,6 +239,8 @@ public:
     std::string role_name = "";
     bool alive = true;
     int vote_target = -1;
+
+    bool bullys_treatment = false;
 
     Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {
         if (!(*this).is_alive()) co_return;
@@ -257,6 +285,13 @@ public:
     void dead() const override {
         const_cast<Mafia*>(this)->alive = false;
     }
+
+    void bullys_treat() const override {
+        const_cast<Mafia*>(this)->bullys_treatment = true;
+    }
+    bool was_bully() const override {
+        return const_cast<Mafia*>(this)->bullys_treatment;
+    }
 };
 
 class Villager : public Role {
@@ -266,6 +301,8 @@ public:
     std::string role_name = "";
     bool alive = true;
     int vote_target = -1;
+
+    bool bullys_treatment = false;
 
     Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {
         co_return;
@@ -306,6 +343,13 @@ public:
     void dead() const override {
         const_cast<Villager*>(this)->alive = false;
     }
+
+    void bullys_treat() const override {
+        const_cast<Villager*>(this)->bullys_treatment = true;
+    }
+    bool was_bully() const override {
+        return const_cast<Villager*>(this)->bullys_treatment;
+    }
 };
 
 class Maniac : public Role {
@@ -316,6 +360,8 @@ public:
     std::string role_name = "";
     bool alive = true;
     int vote_target = -1;
+
+    bool bullys_treatment = false;
 
     Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {
         if (!(*this).is_alive()) co_return;
@@ -360,6 +406,13 @@ public:
     void dead() const override {
         const_cast<Maniac*>(this)->alive = false;
     }
+
+    void bullys_treat() const override {
+        const_cast<Maniac*>(this)->bullys_treatment = true;
+    }
+    bool was_bully() const override {
+        return const_cast<Maniac*>(this)->bullys_treatment;
+    }
 };
 
 // extra
@@ -372,6 +425,8 @@ public:
     int vote_target = -1;
     int number = -1;
     std::string role_name = "";
+
+    bool bullys_treatment = false;
 
     Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {
         if (!(*this).is_alive()) co_return;
@@ -415,6 +470,13 @@ public:
     void dead() const override {
         const_cast<Lier*>(this)->alive = false;
     }
+
+    void bullys_treat() const override {
+        const_cast<Lier*>(this)->bullys_treatment = true;
+    }
+    bool was_bully() const override {
+        return const_cast<Lier*>(this)->bullys_treatment;
+    }
 };
 
 class Drunker : public Role {
@@ -423,6 +485,8 @@ public:
     bool evil = false;
     int target = -1;
     int vote_target = -1;
+
+    bool bullys_treatment = false;
 
     Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {co_return;}
     Action vote(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id) const override {co_return;}
@@ -449,6 +513,13 @@ public:
     void dead() const override {
         const_cast<Drunker*>(this)->alive = false;
     }
+
+    void bullys_treat() const override {
+        const_cast<Drunker*>(this)->bullys_treatment = true;
+    }
+    bool was_bully() const override {
+        return const_cast<Drunker*>(this)->bullys_treatment;
+    }
 };
 
 class Bully : public Role {
@@ -457,11 +528,36 @@ public:
     bool evil = false;
     int target = -1;
     int vote_target = -1;
+    int number = -1;
+    std::string role_name = "";
 
-    Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {co_return;}
-    Action vote(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id) const override {co_return;}
-    void set_role(int num) const override {}
-    std::string get_role() const override {return "";}
+    bool bullys_treatment = false;
+    int bullys_counter = 0;
+
+    Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {
+        if (!(*this).is_alive()) co_return;
+        int tmp_target = distribution(generator);
+        if (const_cast<Bully*>(this)->bullys_counter == num - 1) co_return;
+        while (!(*roles[tmp_target]).is_alive() || !roles[tmp_target]->was_bully()) tmp_target = distribution(generator);
+        const_cast<Bully*>(this)->target = tmp_target;
+        roles[tmp_target]->bullys_treat();
+        const_cast<Bully*>(this)->bullys_counter++;
+        co_return;
+    }
+    Action vote(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id) const override {
+        if (!(*this).is_alive()) co_return;
+        int tmp_target = distribution(generator);
+        while (!(*roles[tmp_target]).is_alive() || tmp_target == id) tmp_target = distribution(generator);
+        const_cast<Bully*>(this)->vote_target = tmp_target;
+        co_return;
+    }
+    void set_role(int num) const override {
+        const_cast<Bully*>(this)->number = num;
+        const_cast<Bully*>(this)->role_name = "Bully";
+    }
+    std::string get_role() const override {
+        return const_cast<Bully*>(this)->role_name;
+    }
     bool is_alive() const override{
         return const_cast<Bully*>(this)->alive;
     }
@@ -482,5 +578,12 @@ public:
     }
     void dead() const override {
         const_cast<Bully*>(this)->alive = false;
+    }
+
+    void bullys_treat() const override {
+        const_cast<Bully*>(this)->bullys_treatment = true;
+    }
+    bool was_bully() const override {
+        return const_cast<Bully*>(this)->bullys_treatment;
     }
 };
