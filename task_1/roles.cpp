@@ -502,8 +502,31 @@ public:
     bool bullys_treatment = false;
     int drunkers_strike = 0;
 
-    Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {co_return;}
-    Action vote(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id) const override {co_return;}
+    Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {
+        if (!(*this).is_alive()) co_return;
+        const_cast<Drunker*>(this)->target = -1;
+        if (const_cast<Drunker*>(this)->drunkers_strike == 2) {
+            const_cast<Drunker*>(this)->drunkers_strike = 0;
+            co_return;
+        }
+        std::uniform_int_distribution<> distrib(0, 1);
+        if (distrib(generator) == 0) {
+            const_cast<Drunker*>(this)->drunkers_strike = 0;
+            co_return;
+        }
+        int tmp_target = distribution(generator);
+        while (!(*roles[tmp_target]).is_alive()) tmp_target = distribution(generator);
+        const_cast<Drunker*>(this)->target = tmp_target;
+        const_cast<Drunker*>(this)->drunkers_strike += 1;
+        co_return;
+    }
+    Action vote(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id) const override {
+        if (!(*this).is_alive()) co_return;
+        int tmp_target = distribution(generator);
+        while (!(*roles[tmp_target]).is_alive() || tmp_target == id) tmp_target = distribution(generator);
+        const_cast<Drunker*>(this)->vote_target = tmp_target;
+        co_return;
+    }
     void set_role(int num) const override {
         const_cast<Drunker*>(this)->number = num;
         const_cast<Drunker*>(this)->role_name = "Drunker";
@@ -554,6 +577,7 @@ public:
     bool bullys_treatment = false;
 
     Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {
+        const_cast<Bully*>(this)->target = -1;
         if (!(*this).is_alive()) co_return;
         bool still_alive_not_bullied = false;
         for (int i = 1; i < num; ++i) {
