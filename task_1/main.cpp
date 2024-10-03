@@ -48,9 +48,18 @@ std::unordered_map<int, std::string> phrases = {
                                             {9, "We all know, that this is "}
 };
 int liers_treatment = -1;
-int bullys_counter = 0;
+int bullies_treatment = -1;
 std::unordered_map<int, std::string> stickers = {
-
+                                            {0, "ᕕ(╭ರ╭ ͟ʖ╮•́)⊃¤=(————-"},
+                                            {1, "(-(-_-(-_(-_(-_-)_-)-_-)_-)_-)-)"},
+                                            {2, "(ﾉ◕ヮ◕)ﾉ*:・ﾟ✧"},
+                                            {3, "┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻"},
+                                            {4, "⊂(◉‿◉)つ"},
+                                            {5, "☜(⌒▽⌒)☞"},
+                                            {6, "	⤜(ⱺ ʖ̯ⱺ)⤏"},
+                                            {7, "ʕノ•ᴥ•ʔノ ︵ ┻━┻"},
+                                            {8, "┌( ͝° ͜ʖ͡°)=ε/̵͇̿̿/’̿’̿ ̿"},
+                                            {9, "ヽ༼ ຈل͜ຈ༼ ▀̿̿Ĺ̯̿̿▀̿ ̿༽Ɵ͆ل͜Ɵ͆ ༽ﾉ"}
 };
 
 //---functions---
@@ -126,19 +135,29 @@ player_night_activity(std::unordered_map<int, SharedPtr<Role>>& roles, int num, 
     }
     if (roles[1]->get_role() == "Bully") {
         std::cout << "You woke up this night..." << std::endl;
-        if (bullys_counter == num - 1) {
-            std::cout << "And went to sleep, because you've already bullied everbody!" << std::endl;
+        int still_alive_not_bullied = false;
+        for (int i = 1; i < num; ++i) {
+            if (roles[i]->is_alive() && !roles[i]->was_bully()) {
+                still_alive_not_bullied = true;
+                break;
+            }
+        }
+        if (!still_alive_not_bullied) {
+            std::cout << "You've already bullied everyone in this city, great job!" << std::endl;
+            std::cout << "You remembered some of your jokes, laughed a little and went to bed again." << std::endl;
+            roles[1]->set_target(-1);
             return;
         }
+
         std::cout << "Please choose who laugh at this night: ";
         std::cin >> tmp_target;
-        while (tmp_target <= 0 || tmp_target >= num || !roles[tmp_target]->is_alive() || roles[tmp_target]->is_alive()) {
-            std::cout << "This player isn't alive or as bullied already, please try again: ";
+        while (tmp_target <= 0 || tmp_target >= num || !roles[tmp_target]->is_alive() || roles[tmp_target]->was_bully()) {
+            std::cout << "This player isn't alive or was bullied already, please try again: ";
             std::cin >> tmp_target;
         }
         roles[1]->set_target(tmp_target);
         roles[tmp_target]->bullys_treat();
-        bullys_counter++;
+        bullies_treatment = tmp_target;
         std::cout << "Now it's time to have a sleep." << std::endl;
     } else if (roles[1]->get_role() == "Lier") {
         std::cout << "You woke up this night..." << std::endl;
@@ -167,7 +186,7 @@ player_night_activity(std::unordered_map<int, SharedPtr<Role>>& roles, int num, 
                 std::cout << "This player isn't alive, please try again: ";
                 std::cin >> tmp_target;
             }
-            if ((*roles[tmp_target]).is_evil()) {
+            if ((*roles[tmp_target]).is_evil() || tmp_target == liers_treatment) {
                 std::cout << "This player is evil." << std::endl; 
             } else {
                 std::cout << "This player is good." << std::endl;
@@ -299,6 +318,18 @@ holders_day_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
     std::uniform_int_distribution<> distrib(0, 9);
     for (int i = 1; i < num; ++i) {
         if (!roles[i]->is_alive()) continue;
+        if (i == bullies_treatment) {
+            int sticker_num = distrib(generator);
+            std::cout << "Player " << i << " says: " << stickers[sticker_num] << std::endl;
+            std::cout << "The judge says: what?.." << std::endl;
+            sticker_num = distrib(generator);
+            std::cout << "Player " << i << " says: " << stickers[sticker_num] << std::endl;
+            std::cout << "The judge says: please, be serious..." << std::endl;
+            sticker_num = distrib(generator);
+            std::cout << "Player " << i << " says: " << stickers[sticker_num] << std::endl;
+            std::cout << "The judge says: nevermind." << std::endl;
+            continue;
+        }
         int phrase_num = distrib(generator);
         std::cout << "Player " << i << " says: " << phrases[phrase_num] << roles[i]->get_vote_target() << std::endl;
         if (votes[roles[i]->get_vote_target()] && votes[roles[i]->get_vote_target()] >= 1) {
@@ -328,23 +359,48 @@ night_is_coming(std::unordered_map<int, SharedPtr<Role>>& roles, int num, bool e
 {
     std::cout << "The night is coming... The city goes to sleep..." << std::endl;
     int lier = -1;
+    int bully = -1;
+    std::vector<std::future<void>> futures;
     for (int i = 1; i < num; ++i) {
         std::string alive = "not alive";
         if ((*roles[i]).is_alive()) alive = "alive";
         std::cout << i << " " << alive << std::endl;
-        if (roles[i]->get_role() == "Lier" && roles[i]->is_alive() && i != 1) lier = i;
-    }
-    if (lier != -1) {
-        roles[lier]->act(roles, num, lier, liers_treatment);
-        liers_treatment = roles[lier]->get_target();
+        if (roles[i]->get_role() == "Lier" && roles[i]->is_alive() && ((i != 1 && player) || !player)) lier = i;
+        if (roles[i]->get_role() == "Bully" && roles[i]->is_alive() && ((i != 1 && player) || !player)) bully = i;
     }
 
-    std::vector<std::future<void>> futures;
+    if (lier != -1) {
+        futures.push_back(std::async(std::launch::async, [&]() {
+            Action action = roles[lier]->act(roles, num, lier, liers_treatment);
+            action.handle.resume();
+        }));
+        for (auto& future : futures) {
+            future.get();
+        }
+        futures.clear();
+        liers_treatment = roles[lier]->get_target();
+    } else {
+        liers_treatment = -1;
+    }
+
+    if (bully != -1) {
+        futures.push_back(std::async(std::launch::async, [&]() {
+            Action action = roles[bully]->act(roles, num, bully, liers_treatment);
+            action.handle.resume();
+        }));
+        for (auto& future : futures) {
+            future.get();
+        }
+        futures.clear();
+        bullies_treatment = roles[bully]->get_target();
+    } else {
+        bullies_treatment = -1;
+    }
     
     for (const auto& [i, bot] : roles) {
         if (player && i == 1) {
             player_night_activity(roles, num, extra);
-        } else if (i != lier) {
+        } else if (i != lier && i != bully) {
             futures.push_back(std::async(std::launch::async, [&]() {
                 Action action = bot->act(roles, num, i, liers_treatment);
                 action.handle.resume();
@@ -459,6 +515,8 @@ finishing_and_results(std::unordered_map<int, SharedPtr<Role>>& roles, bool extr
                 std::cout << "You saved this city from gangs and muderers! Congratulations, boss, now you can safely demand a vacation!" << std::endl;
             } else if (player && (*roles[1]).get_role() == "Sherif" && !(*roles[1]).is_alive()) {
                 std::cout << "You died saving this city... But this city still belongs to its citizens! Despite your death, your mission lives on! Today this city showed, that it will withstand and gangs, and murderers." << std::endl;
+            } else if (player && roles[1]->is_evil()) {
+                std::cout << "Your family fell this time... This city showed you, whos it is... this time..." << std::endl;
             } else if (player) {
                 std::cout << "You and your neighbours showed villains, whose this city is. Today you put all the villains behind bars and start a new, peaceful life." << std::endl;
             } else {
@@ -522,6 +580,13 @@ main(int argc, char* argv[]) {
     // start of the game
     if (player) {
         std::cout << "Your role is " << (*roles[1]).get_role() << std::endl;
+        if (roles[1]->is_evil()) {
+            for (int i = 2; i < number_players; ++i) {
+                if (roles[i]->is_evil()) {
+                    std::cout << "Player " << i << " is " << roles[i]->get_role() << std::endl;
+                }
+            }
+        }
     }
     night_is_coming(roles, number_players, extra, player);
 
