@@ -55,6 +55,10 @@
         "map": "cpp",
         "condition_variable": "cpp",
         "future": "cpp",
-        "mutex": "cpp"
+        "mutex": "cpp",
+        "codecvt": "cpp",
+        "fstream": "cpp",
+        "iomanip": "cpp",
+        "tmp": "c"
     }
 }
