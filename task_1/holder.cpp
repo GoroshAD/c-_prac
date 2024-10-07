@@ -176,11 +176,7 @@ holders_day_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
     std::uniform_int_distribution<> distrib(0, 9);
     for (int i = 1; i < num; ++i) {
         if (!roles[i]->is_alive()) continue;
-        if (i == bullies_treatment && (i != drunker || (i == drunker && (drunkers_treatment == drunker || drunkers_treatment == -1) && !drunkers_bullied))) {
-            if ((i == drunker && (drunkers_treatment == drunker || drunkers_treatment == -1) && !drunkers_bullied)) {
-                roles[drunker]->bullys_treat();
-                drunkers_bullied = true;
-            }
+        if (i == bullies_treatment && i != drunker) {   // everybody except drunker
             logger.day_logging("Player " + std::to_string(i) + " is under bully's joke, so: ");
             int sticker_num = distrib(generator);
             std::cout << "Player " << i << " says: " << stickers[sticker_num] << std::endl;
@@ -196,7 +192,8 @@ holders_day_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
             std::cout << "The judge says: nevermind." << std::endl;
             continue;
         }
-        if (!drunkers_bullied && i == drunker && (drunkers_treatment == bullies_treatment || drunkers_treatment == -1)) {
+        if (i == drunker && !drunkers_bullied && (drunkers_treatment == bullies_treatment || (drunkers_treatment == -1 && drunker == bullies_treatment))) {
+            // if drunker was at bullies treatment house or he was a target and stayed at home
             int sticker_num = distrib(generator);
             logger.day_logging("Player " + std::to_string(i) + " is under bully's joke, so: ");
             std::cout << "Player " << i << " says: " << stickers[sticker_num] << std::endl;

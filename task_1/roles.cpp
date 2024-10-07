@@ -546,7 +546,7 @@ public:
         std::uniform_int_distribution<> distrib(0, 1);
         if (distrib(generator) == 0) {
             const_cast<Drunker*>(this)->drunkers_strike = 0;
-            logger.night_logging("He decided go to bed this night.");
+            logger.night_logging("The Drunker decided go to bed this night.");
             co_return;
         }
         int tmp_target = distribution(generator);
