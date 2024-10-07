@@ -12,7 +12,12 @@
 std::mt19937 generator;   // global generator
 std::uniform_int_distribution<> distribution;   // global distribution
 Logger logger;
+int liers_treatment = -1;
+int bullies_treatment = -1;
+int drunkers_treatment = -1;
+int drunker = -1;
 
+bool drunkers_bullied = false;   // stupid constant
 
 class Action {
 public:
