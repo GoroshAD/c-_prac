@@ -132,7 +132,7 @@ night_is_coming(std::unordered_map<int, SharedPtr<Role>>& roles, int num, bool e
 
     //lier
     if (lier != -1) {
-        liers_treatment = roles[lier]->get_target();
+        liers_treatment = roles[lier]->get_slander_target();
     } else {
         liers_treatment = -1;
     }

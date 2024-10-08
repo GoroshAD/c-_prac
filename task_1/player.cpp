@@ -90,10 +90,18 @@ struct Player {   // players number is always 1
                 std::cout << "This player isn't alive, please try again: ";
                 std::cin >> tmp_target;
             }
-            roles[1]->set_target(tmp_target);
+            roles[1]->set_slander_target(tmp_target);
             liers_treatment = tmp_target;
-            std::cout << "Now it's time to have a sleep." << std::endl;
             logger.night_logging("You slandered player " + std::to_string(tmp_target) + ".");
+            std::cout << "Please choose who to vote at mafia voting this night: ";
+            std::cin >> tmp_target;
+            while (tmp_target <= 0 || tmp_target >= num || !roles[tmp_target]->is_alive()) {
+                std::cout << "This player isn't alive, please try again: ";
+                std::cin >> tmp_target;
+            }
+            roles[1]->set_target(tmp_target);
+            std::cout << "Now it's time to have a sleep." << std::endl;
+            logger.night_logging("You chose player " + std::to_string(tmp_target) + " at mafia voting this night.");
         } else if ((*roles[1]).get_role() == "Sherif") {
             std::cout << "You woke up this night..." << std::endl;
             logger.night_logging("You woke up this night...");

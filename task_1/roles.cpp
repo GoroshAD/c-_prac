@@ -55,6 +55,8 @@ public:
 
     virtual void bullys_treat() const = 0;
     virtual bool was_bully() const = 0;
+    virtual int get_slander_target() const = 0;
+    virtual void set_slander_target(int target) const = 0;
 };
 
 //---//
@@ -110,6 +112,10 @@ public:
     bool was_bully() const override {
         return const_cast<Holder*>(this)->bullys_treatment;
     }
+    int get_slander_target() const override {
+        return -1;
+    }
+    void set_slander_target(int target) const override {}
 };
 
 class Doctor : public Role {
@@ -178,6 +184,10 @@ class Doctor : public Role {
     bool was_bully() const override {
         return const_cast<Doctor*>(this)->bullys_treatment;
     }
+    int get_slander_target() const override {
+        return -1;
+    }
+    void set_slander_target(int target) const override {}
 };
 
 class Sherif : public Role {
@@ -263,6 +273,10 @@ public:
     bool was_bully() const override {
         return const_cast<Sherif*>(this)->bullys_treatment;
     }
+    int get_slander_target() const override {
+        return -1;
+    }
+    void set_slander_target(int target) const override {}
 };
 
 class Mafia : public Role {
@@ -329,6 +343,10 @@ public:
     bool was_bully() const override {
         return const_cast<Mafia*>(this)->bullys_treatment;
     }
+    int get_slander_target() const override {
+        return -1;
+    }
+    void set_slander_target(int target) const override {}
 };
 
 class Villager : public Role {
@@ -390,6 +408,10 @@ public:
     bool was_bully() const override {
         return const_cast<Villager*>(this)->bullys_treatment;
     }
+    int get_slander_target() const override {
+        return -1;
+    }
+    void set_slander_target(int target) const override {}
 };
 
 class Maniac : public Role {
@@ -456,6 +478,10 @@ public:
     bool was_bully() const override {
         return const_cast<Maniac*>(this)->bullys_treatment;
     }
+    int get_slander_target() const override {
+        return -1;
+    }
+    void set_slander_target(int target) const override {}
 };
 
 // extra
@@ -469,15 +495,22 @@ public:
     int number = -1;
     std::string role_name = "";
 
+    int slander_target = -1;
     bool bullys_treatment = false;
 
     Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {
+        const_cast<Lier*>(this)->slander_target = -1;
         if (!(*this).is_alive()) co_return;
         logger.night_logging("The Lier got up (player " + std::to_string(number) + ").");
         int tmp_target = distribution(generator);
         while (!(*roles[tmp_target]).is_alive() || tmp_target == id || (*roles[tmp_target]).is_evil()) tmp_target = distribution(generator);
+        const_cast<Lier*>(this)->slander_target = tmp_target;
+        logger.night_logging("The Lier (player " + std::to_string(number) + ") chose player number " + std::to_string(slander_target) + " and lied about him.");
+        
+        tmp_target = distribution(generator);
+        while (!(*roles[tmp_target]).is_alive() || tmp_target == id || (*roles[tmp_target]).is_evil()) tmp_target = distribution(generator);
         const_cast<Lier*>(this)->target = tmp_target;
-        logger.night_logging("The Lier chose player number " + std::to_string(target) + " and lied about him.");
+        logger.night_logging("The Lier (player " + std::to_string(number) + ") voted for player number " + std::to_string(target) + " at mafia voting.");
         co_return;
     }
     Action vote(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id) const override {
@@ -524,6 +557,12 @@ public:
     }
     bool was_bully() const override {
         return const_cast<Lier*>(this)->bullys_treatment;
+    }
+    int get_slander_target() const override {
+        return const_cast<Lier*>(this)->slander_target;
+    }
+    void set_slander_target(int target) const override {
+        const_cast<Lier*>(this)->slander_target = target;
     }
 };
 
@@ -606,6 +645,10 @@ public:
     bool was_bully() const override {
         return const_cast<Drunker*>(this)->bullys_treatment;
     }
+    int get_slander_target() const override {
+        return -1;
+    }
+    void set_slander_target(int target) const override {}
 };
 
 class Bully : public Role {
@@ -687,5 +730,9 @@ public:
     }
     bool was_bully() const override {
         return const_cast<Bully*>(this)->bullys_treatment;
+    }
+    void set_slander_target(int target) const override {}
+    int get_slander_target() const override {
+        return -1;
     }
 };
