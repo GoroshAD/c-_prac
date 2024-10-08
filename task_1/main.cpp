@@ -45,10 +45,8 @@ roles_creating(int num, bool extra, std::unordered_map<int, SharedPtr<Role>>& ro
         good_quan = num - 6 - evil_quan;
         evil_quan -= 1;   // for Lier
     }
-    std::uniform_int_distribution<> distrib(0, roles_quan - 1 - 1);
-    roles[1] = SharedPtr<Role>(new Drunker());
-    roles[1]->set_role(1);
-    for (int i = 2; i < number_players; ++i) {
+    std::uniform_int_distribution<> distrib(0, roles_quan - 1);
+    for (int i = 1; i < number_players; ++i) {
         while (true) {
             int role = distrib(generator);
             if (role >= 5 && !extra_roles[role - 5].second) {
