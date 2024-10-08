@@ -4,35 +4,36 @@ Player 2 is alive
 Player 3 is alive
 Player 4 is alive
 Player 5 is alive
-The Bully got up (player 3).
 Player 6 is alive
-The Bully chose player number 12 and joked at him.
 Player 7 is alive
-The Lier got up (player 5).
 Player 8 is alive
 Player 9 is alive
-The Lier chose player number 12 and lied about him.
+The Drunker got up (player 7).
+The Drunker chose player number 11 and went to him for all night.
 Player 10 is alive
 Player 11 is alive
 Player 12 is alive
+The Bully got up (player 9).
+The Bully chose player number 13 and joked at him.
 Player 13 is alive
-You woke up this night...
-The Villager slept all night (player 13).
-You drank all night with a buddy (player 6) and went to bed in the morning.
-The Sherif got up (player 2).
-Player 6 is drunker's target, so he is skipping his activity.
-The Maniac got up (player 4).
-The Sherif checked player 5 and knows that he is from mafia family.
-The Maniac chose player number 7 and went to him.
-The Doctor got up (player 7).
-The Doctor chose player number 11 and went to check his health.
-The Mafia got up (player 8).
-The Mafia chose player number 3 and voted at mafia voting.
-The Villager slept all night (player 9).
+The Lier got up (player 12).
+The Lier chose player number 13 and lied about him.
+The Sherif got up (player 13).
+You slept all night.
+The Sherif checked player 5 and knows that he is not from mafia family.
+The Mafia got up (player 2).
+The Mafia chose player number 6 and voted at mafia voting.
+The Maniac got up (player 3).
+The Maniac chose player number 4 and went to him.
+The Mafia got up (player 4).
+The Mafia chose player number 10 and voted at mafia voting.
+The Villager slept all night (player 5).
+The Doctor got up (player 6).
+The Doctor chose player number 9 and went to check his health.
+The Villager slept all night (player 8).
+Player 11 is drunker's target, so he is skipping his activity.
 The Villager slept all night (player 10).
-The Villager slept all night (player 11).
-The Villager slept all night (player 12).
 The Holder made final results:
-Mafia killed player number 3 tonight. He was a Bully.
-Maniac killed player number 7 tonight. He was a Doctor.
-Doctor went to player 11 tonight.
+Mafia killed player number 10 tonight. He was a Villager.
+Maniac killed player number 4 tonight. He was a Mafia.
+Doctor went to player 9 tonight.

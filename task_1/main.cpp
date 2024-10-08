@@ -284,7 +284,7 @@ finishing_and_results(std::unordered_map<int, SharedPtr<Role>>& roles, int num, 
             } else if (player.exists && !roles[1]->is_evil()) {
                 std::cout << "You were trying to stop mafia family, but forgot about another deal - psycho with a knife. Now this city belongs to him, and no one knows, what will be with it tomorrow..." << std::endl;
             } else if (player.exists && roles[1]->is_evil()) {
-                std::cout << "Your family did a great try to be a ruler of the city... but Maniac decide to be the only ruler of this city." << std::endl;
+                std::cout << "Your family did a great attempt to be a ruler of the city... but Maniac decide to be the only ruler of this city." << std::endl;
             } else {
                 std::cout << "You watched the fall of mafia family... the fall of comissioner... villagers... and the rise of MANIAC!" << std::endl;
             }
