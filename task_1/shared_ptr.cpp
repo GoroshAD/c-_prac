@@ -21,7 +21,7 @@ public:
 
     ~SharedPtr() {
         if (ptr && --(*ref_count) == 0) {
-            if (std::is_array_v<T>) {
+            if constexpr (std::is_array_v<T>) {
                 delete[] ptr;
             } else {
                 delete ptr;
@@ -32,8 +32,12 @@ public:
 
     SharedPtr& operator=(const SharedPtr& other) {
         if (this != &other) {
-            if (ptr && --(*ref_count) == 0) {
-                delete ptr;
+            if constexpr (ptr && --(*ref_count) == 0) {
+                if (std::is_array_v<T>) {
+                    delete[] ptr;
+                } else {
+                    delete ptr;
+                }
                 delete ref_count;
             }
             ptr = other.ptr;
@@ -52,7 +56,7 @@ public:
 
     void reset(T* new_ptr = nullptr) {
         if (ptr && --(*ref_count) == 0) {
-            if (std::is_array_v<T>) {
+            if constexpr (std::is_array_v<T>) {
                 delete[] ptr;
             } else {
                 delete ptr;
