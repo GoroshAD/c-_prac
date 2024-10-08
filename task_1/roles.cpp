@@ -194,7 +194,7 @@ public:
         if (!(*this).is_alive()) co_return;
         logger.night_logging("The Sherif got up (player " + std::to_string(number) + ").");
         if (const_cast<Sherif*>(this)->mafia_known != -1 && (*roles[const_cast<Sherif*>(this)->mafia_known]).is_alive()) {
-            logger.night_logging("The Sherif knows, that player number " + std::to_string(mafia_known) + " is from Mafia family. So he tries to assault him...");
+            logger.night_logging("The Sherif knows, that player number " + std::to_string(mafia_known) + " is from mafia family. So he tries to assault him...");
             const_cast<Sherif*>(this)->target = const_cast<Sherif*>(this)->mafia_known;
             co_return;
         } else if (const_cast<Sherif*>(this)->mafia_known != -1 && !(*roles[const_cast<Sherif*>(this)->mafia_known]).is_alive()) {
@@ -340,6 +340,7 @@ public:
     bool bullys_treatment = false;
 
     Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {
+        if (!(*this).is_alive()) co_return;
         logger.night_logging("The Villager slept all night (player " + std::to_string(number) + ").");
         co_return;
     }
@@ -535,9 +536,9 @@ public:
     int drunkers_strike = 0;
 
     Action act(std::unordered_map<int, SharedPtr<Role>> &roles, int num, int id, int liers_treat) const override {
+        const_cast<Drunker*>(this)->target = -1;
         if (!(*this).is_alive()) co_return;
         logger.night_logging("The Drunker got up (player " + std::to_string(number) + ").");
-        const_cast<Drunker*>(this)->target = -1;
         if (const_cast<Drunker*>(this)->drunkers_strike == 2) {
             const_cast<Drunker*>(this)->drunkers_strike = 0;
             logger.night_logging("The Drunker decided go to bed this night.");

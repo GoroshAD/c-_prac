@@ -233,7 +233,7 @@ holders_day_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
     }
 
     std::cout << "To the jail player " << max_index << " was sent. He was " << roles[max_index]->get_role() << " by the way." << std::endl;
-    logger.day_logging("To the jail player " + std::to_string(max_index) + " was sent. He was " + roles[max_index]->get_role() + " by the way.");
+    logger.day_logging("To the jail player " + std::to_string(max_index) + " was sent. He was a " + roles[max_index]->get_role() + " by the way.");
     roles[max_index]->dead();
     return;
 }
