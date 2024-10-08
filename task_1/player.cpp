@@ -11,8 +11,8 @@ struct Player {   // players number is always 1
     player_night_activity(std::unordered_map<int, SharedPtr<Role>>& roles, int num, bool extra) {
         int tmp_target = -1;
         if (!(*roles[1]).is_alive()) {
-            std::cout << "You're died, so you can't do anything this night." << std::endl;
-            logger.night_logging("You're died.");
+            std::cout << "You're dead, so you can't do anything this night." << std::endl;
+            logger.night_logging("You're dead.");
             return;
         }
         if (roles[1]->get_role() == "Drunker") {

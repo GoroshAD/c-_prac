@@ -51,6 +51,7 @@ holders_night_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
         } else if (role == "Maniac") {
             maniacs_target = (*roles[i]).get_target();
         } else if (role == "Mafia") {
+            if (roles[i]->get_target() == -1) continue;
             if (mafias_targets[(*roles[i]).get_target()] && mafias_targets[(*roles[i]).get_target()] >= 1) {
                 mafias_targets[(*roles[i]).get_target()] += 1;
             } else {

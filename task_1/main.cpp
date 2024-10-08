@@ -281,8 +281,10 @@ finishing_and_results(std::unordered_map<int, SharedPtr<Role>>& roles, int num, 
             logger.finish_logging("Maniac wins.");
             if (player.exists && (*roles[1]).get_role() == "Maniac") {
                 std::cout << "You've done a great job saving this city from mafia... and from its citizens. Now it's your city and no one will stop you!" << std::endl; 
-            } else if (player.exists) {
+            } else if (player.exists && !roles[1]->is_evil()) {
                 std::cout << "You were trying to stop mafia family, but forgot about another deal - psycho with a knife. Now this city belongs to him, and no one knows, what will be with it tomorrow..." << std::endl;
+            } else if (player.exists && roles[1]->is_evil()) {
+                std::cout << "Your family did a great try to be a ruler of the city... but Maniac decide to be the only ruler of this city." << std::endl;
             } else {
                 std::cout << "You watched the fall of mafia family... the fall of comissioner... villagers... and the rise of MANIAC!" << std::endl;
             }
@@ -294,7 +296,7 @@ finishing_and_results(std::unordered_map<int, SharedPtr<Role>>& roles, int num, 
             } else if (player.exists && (*roles[1]).get_role() == "Sherif" && !(*roles[1]).is_alive()) {
                 std::cout << "You died saving this city... But this city still belongs to its citizens! Despite your death, your mission lives on! Today this city showed, that it will withstand and gangs, and murderers." << std::endl;
             } else if (player.exists && roles[1]->is_evil()) {
-                std::cout << "Your family fell this time... This city showed you, whos it is... this time..." << std::endl;
+                std::cout << "Your family fell this time... This city showed you, whose it is... this time..." << std::endl;
             } else if (player.exists) {
                 std::cout << "You and your neighbours showed villains, whose this city is. Today you put all the villains behind bars and start a new, peaceful life." << std::endl;
             } else {
