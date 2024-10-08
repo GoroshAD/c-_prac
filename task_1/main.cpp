@@ -28,8 +28,8 @@ std::vector<std::pair<std::string, bool>> main_roles = {{"Psycho", false},
                                                         {"Doctor", false},
                                                         {"Villager", false}};
 std::vector<std::pair<std::string, bool>> extra_roles = {{"Lier", false},
-                                                         {"Drunker", false},
-                                                         {"Bully", false}};
+                                                         {"Bully", false},
+                                                         {"Drunker", false}};
 
 //---functions---
 void
@@ -45,8 +45,10 @@ roles_creating(int num, bool extra, std::unordered_map<int, SharedPtr<Role>>& ro
         good_quan = num - 6 - evil_quan;
         evil_quan -= 1;   // for Lier
     }
-    std::uniform_int_distribution<> distrib(0, roles_quan - 1);
-    for (int i = 1; i < number_players; ++i) {
+    std::uniform_int_distribution<> distrib(0, roles_quan - 1 - 1);
+    roles[1] = SharedPtr<Role>(new Drunker());
+    roles[1]->set_role(1);
+    for (int i = 2; i < number_players; ++i) {
         while (true) {
             int role = distrib(generator);
             if (role >= 5 && !extra_roles[role - 5].second) {
@@ -100,9 +102,6 @@ night_is_coming(std::unordered_map<int, SharedPtr<Role>>& roles, int num, bool e
 {
     std::cout << "The night is coming... The city goes to sleep..." << std::endl;
     logger.night_logging("The " + std::to_string(logger.round_counter) + " night is coming... The city goes to sleep...");
-    int lier = -1;
-    int bully = -1;
-    drunker = -1;
     std::vector<std::future<void>> futures;
     for (int i = 1; i < num; ++i) {
         std::string alive = "not alive";
@@ -110,21 +109,18 @@ night_is_coming(std::unordered_map<int, SharedPtr<Role>>& roles, int num, bool e
         std::cout << i << " " << alive << std::endl;
         logger.night_logging("Player " + std::to_string(i) + " is " + alive);
         if (roles[i]->get_role() == "Lier" && roles[i]->is_alive() && ((i != 1 && player.exists) || !player.exists)) {
-            lier = i;
             futures.push_back(std::async(std::launch::async, [&]() {
                 Action action = roles[lier]->act(roles, num, lier, liers_treatment);
                 action.handle.resume();
             }));
         }
         if (roles[i]->get_role() == "Bully" && roles[i]->is_alive() && ((i != 1 && player.exists) || !player.exists)) {
-            bully = i;
             futures.push_back(std::async(std::launch::async, [&]() {
                 Action action = roles[bully]->act(roles, num, bully, liers_treatment);
                 action.handle.resume();
             }));
         }
         if (roles[i]->get_role() == "Drunker" && roles[i]->is_alive() && ((i != 1 && player.exists) || !player.exists)) {
-            drunker = i;
             futures.push_back(std::async(std::launch::async, [&]() {
                 Action action = roles[drunker]->act(roles, num, drunker, liers_treatment);
                 action.handle.resume();
@@ -159,8 +155,20 @@ night_is_coming(std::unordered_map<int, SharedPtr<Role>>& roles, int num, bool e
     
     for (const auto& [i, bot] : roles) {
         if (player.exists && i == 1) {
+            if (i == drunkers_treatment) {
+                std::cout << "You're a drunker's target tonight, so just relax and have a nice night together!" << std::endl;
+                logger.night_logging("You're a drunker's target today, so skipping your night activity...");
+                if (roles[1]->get_role() == "Doctor") {
+                    player.player_doctors_prev = -1;
+                }
+                continue;
+            }
             player.player_night_activity(roles, num, extra);
         } else if (i != lier && i != bully && i != drunker) {
+            if (i == drunkers_treatment) {
+                logger.night_logging("Player " + std::to_string(i) + " is drunker's target, so he is skipping his activity.");
+                continue;
+            }
             futures.push_back(std::async(std::launch::async, [&]() {
                 Action action = bot->act(roles, num, i, liers_treatment);
                 action.handle.resume();

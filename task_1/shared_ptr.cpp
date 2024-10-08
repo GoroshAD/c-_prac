@@ -32,8 +32,8 @@ public:
 
     SharedPtr& operator=(const SharedPtr& other) {
         if (this != &other) {
-            if constexpr (ptr && --(*ref_count) == 0) {
-                if (std::is_array_v<T>) {
+            if (ptr && --(*ref_count) == 0) {
+                if constexpr (std::is_array_v<T>) {
                     delete[] ptr;
                 } else {
                     delete ptr;

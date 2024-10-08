@@ -46,8 +46,13 @@ struct Player {   // players number is always 1
             }
             drunkers_treatment = tmp_target;
             drunkers_strike++;
-            std::cout << "You drank all night with a buddy and went to bed in the morning." << std::endl;
-            logger.night_logging("You drank all night with a buddy (player " + std::to_string(tmp_target) + ") and went to bed in the morning.");
+            if (drunkers_treatment == 1) {
+                std::cout << "You decided to drink with yourself and went to bed in the morning." << std::endl;
+                logger.night_logging("You drank with yourself all night and went to bed in the morning.");
+            } else {
+                std::cout << "You drank all night with a buddy and went to bed in the morning." << std::endl;
+                logger.night_logging("You drank all night with a buddy (player " + std::to_string(tmp_target) + ") and went to bed in the morning.");
+            }
         } else if (roles[1]->get_role() == "Bully") {
             std::cout << "You woke up this night..." << std::endl;
             int still_alive_not_bullied = false;

@@ -77,7 +77,7 @@ holders_night_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
             std::cout << "Mafia killed player number " << mafias_target << " tonight. He was a " << (*roles[mafias_target]).get_role() << "." << std::endl;
             logger.night_logging("Mafia killed player number " + std::to_string(mafias_target) + " tonight. He was a " + (*roles[mafias_target]).get_role() + ".");
             (*roles[mafias_target]).dead();
-            if (drunkers_treatment == mafias_target && drunker != drunkers_treatment) {
+            if (drunker != -1 && drunkers_treatment == mafias_target && drunker != drunkers_treatment) {
                 std::cout << "Mafia also killed player number " << drunker << " tonight. He was a " << (*roles[drunker]).get_role() << "." << std::endl;
                 logger.night_logging("Mafia also killed player number " + std::to_string(mafias_target) + " tonight. He was a " + (*roles[mafias_target]).get_role() + ".");
                 (*roles[drunker]).dead();
@@ -90,13 +90,12 @@ holders_night_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
         } else {
             std::cout << "Someone tried to kill player " << mafias_target << " tonight. Luckily, Doctor saved him from his death." << std::endl;
             logger.night_logging("Mafia tried to kill player number " + std::to_string(mafias_target) + " tonight, but Doctor saved him.");
-            if (mafias_target == drunkers_treatment && drunker != drunkers_treatment) {
+            if (drunker != -1 && mafias_target == drunkers_treatment && drunker != drunkers_treatment) {
                 std::cout << "Someone also tried to kill player " << drunker << " tonight. Luckily, Doctor saved him from his death." << std::endl;
                 logger.night_logging("Mafia also tried to kill player number " + std::to_string(mafias_target) + " tonight, but Doctor saved him.");
             }
         }
     }
-
     if (maniacs_target != -1 && maniacs_target != doctors_target && roles[maniacs_target]->is_alive()) {
         if (maniacs_target == drunker && drunkers_treatment != -1 && drunkers_treatment != drunker) {
             std::cout << "Maniac came to drunker's place tonight, but he wasn't home." << std::endl;
@@ -105,7 +104,7 @@ holders_night_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
             std::cout << "Maniac killed player number " << maniacs_target << " tonight. He was a " << (*roles[maniacs_target]).get_role() << "." << std::endl;
             logger.night_logging("Maniac killed player number " + std::to_string(maniacs_target) + " tonight. He was a " + (*roles[maniacs_target]).get_role() + ".");
             (*roles[maniacs_target]).dead();
-            if (drunkers_treatment == maniacs_target && drunker != drunkers_treatment) {
+            if (drunker != -1 && drunkers_treatment == maniacs_target && drunker != drunkers_treatment) {
                 std::cout << "Maniac also killed player number " << drunker << " tonight. He was a " << (*roles[drunker]).get_role() << "." << std::endl;
                 logger.night_logging("Maniac also killed player number " + std::to_string(drunker) + " tonight. He was a " + (*roles[drunker]).get_role() + ".");
                 (*roles[drunker]).dead();
@@ -118,7 +117,7 @@ holders_night_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
         } else {
             std::cout << "Someone tried to kill player " << maniacs_target << " tonight. Luckily, Doctor saved him from his death." << std::endl;
             logger.night_logging("Maniac tried to kill player number " + std::to_string(mafias_target) + " tonight, but Doctor saved him.");
-            if (drunkers_treatment == maniacs_target && drunker != drunkers_treatment) {
+            if (drunker != -1 && drunkers_treatment == maniacs_target && drunker != drunkers_treatment) {
                 std::cout << "Someone also tried to kill player " << drunker << " tonight. Luckily, Doctor saved him from his death." << std::endl;
                 logger.night_logging("Maniac also tried to kill player number " + std::to_string(mafias_target) + " tonight, but Doctor saved him.");
             }
@@ -133,7 +132,7 @@ holders_night_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
             std::cout << "Sherif killed player number " << sherifs_target << " tonight. He was a " << (*roles[sherifs_target]).get_role() << "." << std::endl;
             logger.night_logging("Sherif killed player number " + std::to_string(sherifs_target) + " tonight. He was a " + (*roles[sherifs_target]).get_role() + ".");
             (*roles[sherifs_target]).dead();
-            if (sherifs_target == drunkers_treatment && drunker != drunkers_treatment) {
+            if (drunker != -1 && sherifs_target == drunkers_treatment && drunker != drunkers_treatment) {
                 std::cout << "Sherif also killed player number " << drunker << " tonight. He was a " << (*roles[drunker]).get_role() << "." << std::endl;
                 logger.night_logging("Sherif also killed player number " + std::to_string(drunker) + " tonight. He was a " + (*roles[drunker]).get_role() + ".");
                 (*roles[drunker]).dead();
@@ -146,7 +145,7 @@ holders_night_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
         } else {
             std::cout << "Someone tried to kill player " << sherifs_target << " tonight. Luckily, Doctor saved him from his death." << std::endl;
             logger.night_logging("Sherif tried to kill player number " + std::to_string(sherifs_target) + " tonight, but Doctor saved him.");
-            if (drunkers_treatment == sherifs_target && drunker != drunkers_treatment) {
+            if (drunker != -1 && drunkers_treatment == sherifs_target && drunker != drunkers_treatment) {
                 std::cout << "Someone also tried to kill player " << drunker << " tonight. Luckily, Doctor saved him from his death." << std::endl;
                 logger.night_logging("Sherif also tried to kill player number " + std::to_string(drunker) + " tonight, but Doctor saved him.");
             }
@@ -160,7 +159,7 @@ holders_night_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
         } else {
             std::cout << "Doctor went to player " << doctors_target << " tonight." << std::endl;
             logger.night_logging("Doctor went to player " + std::to_string(doctors_target) + " tonight.");
-            if (drunkers_treatment == doctors_target && drunker != drunkers_treatment) {
+            if (drunker != -1 && drunkers_treatment == doctors_target && drunker != drunkers_treatment) {
                 std::cout << "Doctor also saw there player " << drunker << "." << std::endl;
                 logger.night_logging("Doctor also saw player " + std::to_string(drunker) + " tonight.");
             }
@@ -231,9 +230,13 @@ holders_day_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
             max_index = i.first;
         }
     }
-
-    std::cout << "To the jail player " << max_index << " was sent. He was " << roles[max_index]->get_role() << " by the way." << std::endl;
-    logger.day_logging("To the jail player " + std::to_string(max_index) + " was sent. He was a " + roles[max_index]->get_role() + " by the way.");
-    roles[max_index]->dead();
+    if (max_index == bullies_treatment) {
+        std::cout << "Player " << max_index << " can't be sent to the jail. He isn't alright now, so we'll deal with him later." << std::endl;
+        logger.day_logging("Player " + std::to_string(max_index) + " is Bully's target, so he can't be sent to the jail.");
+    } else {
+        std::cout << "To the jail player " << max_index << " was sent. He was " << roles[max_index]->get_role() << " by the way." << std::endl;
+        logger.day_logging("To the jail player " + std::to_string(max_index) + " was sent. He was a " + roles[max_index]->get_role() + " by the way.");
+        roles[max_index]->dead();
+    }
     return;
 }

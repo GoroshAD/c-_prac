@@ -12,6 +12,8 @@
 std::mt19937 generator;   // global generator
 std::uniform_int_distribution<> distribution;   // global distribution
 Logger logger;
+int bully = -1;
+int lier = -1;
 int liers_treatment = -1;
 int bullies_treatment = -1;
 int drunkers_treatment = -1;
@@ -489,6 +491,7 @@ public:
     void set_role(int num) const override {
         const_cast<Lier*>(this)->number = num;
         const_cast<Lier*>(this)->role_name = "Lier";
+        lier = num;
     }
     std::string get_role() const override {
         return const_cast<Lier*>(this)->role_name;
@@ -512,6 +515,7 @@ public:
         const_cast<Lier*>(this)->vote_target = target;
     }
     void dead() const override {
+        lier = -1;
         const_cast<Lier*>(this)->alive = false;
     }
 
@@ -568,7 +572,7 @@ public:
     void set_role(int num) const override {
         const_cast<Drunker*>(this)->number = num;
         const_cast<Drunker*>(this)->role_name = "Drunker";
-        return;
+        drunker = num;
     }
     std::string get_role() const override {
         return const_cast<Drunker*>(this)->role_name;
@@ -593,6 +597,7 @@ public:
     }
     void dead() const override {
         const_cast<Drunker*>(this)->alive = false;
+        drunker = -1;
     }
 
     void bullys_treat() const override {
@@ -649,6 +654,7 @@ public:
     void set_role(int num) const override {
         const_cast<Bully*>(this)->number = num;
         const_cast<Bully*>(this)->role_name = "Bully";
+        bully = num;
     }
     std::string get_role() const override {
         return const_cast<Bully*>(this)->role_name;
@@ -673,6 +679,7 @@ public:
     }
     void dead() const override {
         const_cast<Bully*>(this)->alive = false;
+        bully = -1;
     }
 
     void bullys_treat() const override {
