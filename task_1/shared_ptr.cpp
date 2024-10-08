@@ -3,9 +3,10 @@
 template <typename T>
 class SharedPtr {
 private:
-    T* ptr;
-    int* ref_count;
+    
 public:
+T* ptr;
+    int* ref_count;
     //constructors
     SharedPtr() : ptr(nullptr), ref_count(nullptr) {}
     SharedPtr(T* ptr) : ptr(ptr), ref_count(new int(1)) {}

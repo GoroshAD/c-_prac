@@ -1,23 +1,25 @@
 The 4 night is coming... The city goes to sleep...
-Player 1 is not alive
-Player 2 is not alive
+Player 1 is alive
+Player 2 is alive
 Player 3 is not alive
-Player 4 is alive
-Player 5 is alive
-Player 6 is not alive
-The Lier got up (player 5).
+The Drunker got up (player 2).
+Player 4 is not alive
+The Drunker decided go to bed this night.
+Player 5 is not alive
+Player 6 is alive
 Player 7 is not alive
-The Lier (player 5) chose player number 13 and lied about him.
-The Lier (player 5) voted for player number 13 at mafia voting.
-Player 8 is not alive
+Player 8 is alive
 Player 9 is not alive
-Player 10 is not alive
+Player 10 is alive
 Player 11 is not alive
 Player 12 is not alive
-Player 13 is alive
-The Villager slept all night (player 13).
-You're dead.
-The Doctor got up (player 4).
-The Doctor chose player number 13 and went to check his health.
+Player 13 is not alive
+You woke up this night...
+You decided to check.
+Player 10 isn't from mafia family
+The Villager slept all night (player 6).
+The Villager slept all night (player 10).
+The Maniac got up (player 8).
+The Maniac chose player number 10 and went to him.
 The Holder made final results:
-Mafia tried to kill player number 13 tonight, but Doctor saved him.
+Maniac killed player number 10 tonight. He was a Villager.

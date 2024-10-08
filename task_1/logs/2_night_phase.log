@@ -1,37 +1,38 @@
 The 2 night is coming... The city goes to sleep...
-Player 1 is not alive
+Player 1 is alive
 Player 2 is alive
 Player 3 is alive
-Player 4 is alive
+The Drunker got up (player 2).
+The Drunker decided go to bed this night.
+Player 4 is not alive
+The Lier got up (player 3).
+The Lier (player 3) chose player number 8 and lied about him.
 Player 5 is alive
+The Lier (player 3) voted for player number 2 at mafia voting.
 Player 6 is alive
-The Lier got up (player 5).
-Player 7 is not alive
-The Lier (player 5) chose player number 9 and lied about him.
-The Lier (player 5) voted for player number 12 at mafia voting.
+Player 7 is alive
 Player 8 is alive
 Player 9 is alive
-The Bully got up (player 8).
-The Bully chose player number 6 and joked at him.
 Player 10 is alive
-The Drunker got up (player 9).
-The Drunker chose player number 3 and went to him for all night.
-Player 11 is not alive
-Player 12 is alive
+Player 11 is alive
+Player 12 is not alive
 Player 13 is alive
 The Villager slept all night (player 13).
-You're dead.
-Player 3 is drunker's target, so he is skipping his activity.
-The Villager slept all night (player 2).
-The Doctor got up (player 4).
-The Doctor chose player number 6 and went to check his health.
-The Maniac got up (player 6).
-The Maniac chose player number 3 and went to him.
+You woke up this night...
+You decided to check.
+Player 3 is from mafia family
+The Villager slept all night (player 5).
+The Villager slept all night (player 6).
+The Doctor got up (player 9).
+The Maniac got up (player 8).
+The Mafia got up (player 7).
 The Villager slept all night (player 10).
-The Sherif got up (player 12).
-The Sherif checked player 9 and knows that he is from mafia family.
+The Maniac chose player number 11 and went to him.
+The Doctor chose player number 10 and went to check his health.
+The Mafia got up (player 11).
+The Mafia chose player number 13 and voted at mafia voting.
+The Mafia chose player number 13 and voted at mafia voting.
 The Holder made final results:
-Mafia killed player number 12 tonight. He was a Sherif.
-Maniac killed player number 3 tonight. He was a Mafia.
-Maniac also killed player number 9 tonight. He was a Drunker.
-Doctor went to player 6 tonight.
+Mafia killed player number 13 tonight. He was a Villager.
+Maniac killed player number 11 tonight. He was a Mafia.
+Doctor went to player 10 tonight.

@@ -134,7 +134,7 @@ class Doctor : public Role {
         logger.night_logging("The Doctor got up (player " + std::to_string(number) + ").");
         int tmp_target = distribution(generator);
         int tmp_prev = const_cast<Doctor*>(this)->prev;
-        while (!(*roles[tmp_target]).is_alive() || tmp_target == id || tmp_prev == tmp_target) tmp_target = distribution(generator);
+        while (!(*roles[tmp_target]).is_alive() || tmp_prev == tmp_target) tmp_target = distribution(generator);
         const_cast<Doctor*>(this)->target = tmp_target;
         const_cast<Doctor*>(this)->prev = tmp_target;
         logger.night_logging("The Doctor chose player number " + std::to_string(target) + " and went to check his health.");
@@ -675,7 +675,7 @@ public:
         }
         if (!still_alive_not_bullied) {
             const_cast<Bully*>(this)->target = -1;
-            logger.night_logging("THe Bully already joked at everybody in this city, so he went to bed.");
+            logger.night_logging("The Bully already joked at everybody in this city, so he went to bed.");
             co_return;
         }
         int tmp_target = distribution(generator);

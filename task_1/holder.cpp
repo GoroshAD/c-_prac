@@ -190,9 +190,10 @@ holders_day_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
             std::cout << "Player " << i << " says: " << stickers[sticker_num] << std::endl;
             logger.day_logging("Player " + std::to_string(i) + " says: " + stickers[sticker_num]);
             std::cout << "The judge says: nevermind." << std::endl;
+            roles[i]->bullys_treat();
             continue;
         }
-        if (i == drunker && !drunkers_bullied && (drunkers_treatment == bullies_treatment || (drunkers_treatment == -1 && drunker == bullies_treatment))) {
+        if (i == drunker && !drunkers_bullied && ((drunkers_treatment != -1 && drunkers_treatment == bullies_treatment) || (drunkers_treatment == -1 && drunker == bullies_treatment))) {
             // if drunker was at bullies treatment house or he was a target and stayed at home
             int sticker_num = distrib(generator);
             logger.day_logging("Player " + std::to_string(i) + " is under bully's joke, so: ");
@@ -231,7 +232,7 @@ holders_day_checker(std::unordered_map<int, SharedPtr<Role>>& roles, int num)
             max_index = i.first;
         }
     }
-    if (max_index == bullies_treatment) {
+    if (max_index == bullies_treatment || (max_index == drunker && drunkers_treatment == bullies_treatment && bullies_treatment != -1)) {
         std::cout << "Player " << max_index << " can't be sent to the jail. He isn't alright now, so we'll deal with him later." << std::endl;
         logger.day_logging("Player " + std::to_string(max_index) + " is Bully's target, so he can't be sent to the jail.");
     } else {
