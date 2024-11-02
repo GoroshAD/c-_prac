@@ -13,8 +13,8 @@
 #include <thread>
 
 class Schedule_solution;
-char *sending_parser(Schedule_solution *sol, int n, int signal, char *buffer);
-Schedule_solution *receiving_parser(char *buffer, int n, int m, std::vector<int> &jobs);
+char *sending_parser(int job, int proc, int signal, char *buffer);
+std::pair<int, int> receiving_parser(char *buffer);
 
 //----------------------------------constants---------------------------------
 unsigned int prio = 1;
@@ -41,10 +41,10 @@ public:
     std::vector<int> job_times;
 
     Schedule_solution(int n, int m, std::vector<int>& j) : job_times(j), proc_num(m) {
-        std::vector<int> completion_times(proc_num, 0);
+        std::vector<int> numbers(proc_num, 0);
         for (int i = 0; i < n; ++i) {
-            schedule.push_back(std::pair(i % m, completion_times[i % m]));
-            completion_times[i % m] += job_times[i];
+            schedule.push_back(std::pair(i % m, numbers[i % m]));
+            numbers[i % m] += 1;
         }
     }
 
@@ -61,7 +61,7 @@ public:
 
     void print() const override {
         for (int i = 0; i < schedule.size(); ++i) {
-            std::cout << "Job " << i << ": processor " << schedule[i].first << " finish time " << schedule[i].second + job_times[i] << std::endl;
+            std::cout << "Job " << i << ": processor " << schedule[i].first << " number on it " << schedule[i].second << std::endl;
         }
     }
 
@@ -77,41 +77,35 @@ public:
 class Mutation {
 public:
     virtual ~Mutation() = default;
-    virtual void mutate(Schedule_solution& s) = 0;
+    virtual void mutate(Schedule_solution& s, int job_ind, int new_proc) = 0;
+    virtual std::pair<int, int> choose(int n, int m) = 0;
 };
 
 class Schedule_mutation : public Mutation {
     std::mt19937 gen;
 public:
     Schedule_mutation() : gen(std::random_device{}()) {};
-
-    void mutate(Schedule_solution& s) override {
-        int n = s.schedule.size();
-        int m = s.proc_num;
+    
+    std::pair<int, int> choose(int n, int m) override {
         std::uniform_int_distribution<> dist_job(0, n - 1);
         int job_ind = dist_job(gen);
         std::uniform_int_distribution<> dist_proc(0, m - 1);
         int new_proc = dist_proc(gen);
-        std::vector<int> proc_times(m);
 
-        //std::cout << job_ind << " " << new_proc << std::endl;
-
-        int starting_time_job = 0;
+        return std::pair(job_ind, new_proc);
+    }
+    
+    void mutate(Schedule_solution& s, int job_ind, int new_proc) override {
+        int n = s.schedule.size();
+        int m = s.proc_num;
+        std::vector<int> numbers(m, 0);
         for (int i = 0; i < n; ++i) {
-            if (s.schedule[i].first == s.schedule[job_ind].first && i > job_ind) {
-                s.schedule[i].second -= s.job_times[job_ind];
+            if (i == job_ind) {
+                s.schedule[i].first = new_proc;
             }
-            if (s.schedule[i].first == new_proc) {
-                if (i > job_ind) {
-                    s.schedule[i].second += s.job_times[job_ind];
-                } else if (i < job_ind) {
-                    starting_time_job += s.job_times[i];
-                } else {
-                    s.schedule[i].second = starting_time_job;
-                }
-            }
+            s.schedule[i].second = numbers[s.schedule[i].first];
+            ++numbers[s.schedule[i].first];
         }
-        s.schedule[job_ind].first = new_proc;
     }
 };
 //----------------------------------------------------------------------------
@@ -179,35 +173,36 @@ class Annealing {
 public:
     Annealing() {};
 
-    void run(Schedule_solution* init_solution, int n, int m, std::vector<int> &jobs) {
-        char buffer[1];
+    void run(int n, int m) {
         mqd_t to, from;
+        //std::cout << "where" << std::endl;
         while ((to = mq_open(to_main, O_WRONLY)) == -1) {};
+        //std::cout << "how" << std::endl;
         while ((from = mq_open(from_main, O_RDONLY)) == -1) {};
-
-		Schedule_solution* current_solution = init_solution->clone();
+        //std::cout << to << " " << from << std::endl;
         Schedule_mutation mutation = Schedule_mutation();
+        //std::cout << "okay" << std::endl;
+
     	while (true) {
-    	    Schedule_solution* new_solution = current_solution->clone();
-    	    mutation.mutate(*new_solution);
-    	    
-            //new_solution->print();
+    	    std::pair<int, int> mut = mutation.choose(n, m);
             char buffer[8192];
-            mq_send(to, sending_parser(new_solution, n, 1, buffer), 8192, prio);
+
+            //std::cout <<"!" << mut.first << " " << mut.second << std::endl;
+
+            mq_send(to, sending_parser(mut.first, mut.second, 1, buffer), 8192, prio);
+            
             //std::cout << "client send 1" << std::endl;
-            mq_receive(from, buffer, 8192, &prio);
-            if (int(buffer[0]) == 1) {
-                //std::cout << "client rcvd 1" << std::endl;
-                current_solution = receiving_parser(buffer, n, m, jobs)->clone();
-            } else {
+
+            while (mq_receive(from, buffer, 8192, &prio) == -1) {}
+            if (int(buffer[0]) == 2) {
+
                 //std::cout << "client rcvd 2" << std::endl;
+
                 std::destroy_at(buffer);
                 break;
             }
             std::destroy_at(buffer);
     	}
-
-    	delete current_solution;
         exit(0);
     }
 };
@@ -216,29 +211,54 @@ public:
 
 
 //------------------------------parsers---------------------------------------
-char *sending_parser(Schedule_solution *sol, int n, int signal, char *buffer) {
+char *sending_parser(int job, int proc, int signal, char *buffer) {
     if (signal == 1) {
         buffer[0] = char(1);
-        for (int i = 0; i < n; ++i) {
-            buffer[i + 1] = char(sol->schedule[i].first);
+        int i = 1;
+        while (job > 0) {
+            buffer[i] = char(job % 2);
+            job = job / 2;
+            i += 1;
         }
+        buffer[i] = char(2);
+        i += 1;
+        while (proc > 0) {
+            buffer[i] = char(proc % 2);
+            proc = proc / 2;
+            i += 1;
+        }
+        buffer[i] = char(2);
+        /*for (int j = 1; j < i + 1; ++j) {
+            printf("%d", int(buffer[j]));
+        }
+        printf("s\n");*/
         return buffer;
     }
-    buffer[0] = 2;
+    buffer[0] = char(2);
     return buffer;
 }
 
-Schedule_solution *receiving_parser(char *buffer, int n, int m, std::vector<int> &jobs) {
-    Schedule_solution* sol = new Schedule_solution(n, m, jobs);
-    std::vector<int> start_times(m);
-    for (int i = 0; i < m; ++i) {
-        start_times[i] = 0;
+std::pair<int, int> receiving_parser(char *buffer) {
+    std::pair<int, int> rcv(0, 0);
+    int counter = 1;
+    int i = 1;
+    while (int(buffer[i]) != 2) {
+        rcv.first += int(buffer[i]) * counter;
+        counter *= 2;
+        ++i;
     }
-    for (int i = 0; i < n; ++i) {
-        int selected = int(buffer[i + 1]);
-        sol->schedule[i] = {selected, start_times[selected]};
-        start_times[selected] += jobs[i];
+    ++i;
+    counter = 1;
+    while (int(buffer[i]) != 2) {
+        rcv.second += int(buffer[i] * counter);
+        counter *= 2;
+        ++i;
     }
-    return sol;
+    /*for (int j = 1; j < i; ++j) {
+        printf("%d", int(buffer[j]));
+    }
+    printf("r\n");
+    std::cout << rcv.first << " " << rcv.second << std::endl;*/
+    return rcv;
 }
 //----------------------------------------------------------------------------
