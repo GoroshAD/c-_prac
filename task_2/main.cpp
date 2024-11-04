@@ -34,7 +34,12 @@ int main(int argc, char *argv[]) {
     attr.mq_flags = 1;
     attr.mq_curmsgs = 0;
 
-    Cooler* bolz = new Bolzman_cooler(1000.0);
+    std::vector<double> times_results(5);
+    for (int co = 0; co < 5; ++co) {
+
+    //Cooler* bolz = new Bolzman_cooler(1000.0);
+    //Cooler* bolz = new Cauchy_cooler(1000.0);
+    Cooler* bolz = new Third_cooler(1000.0);
     Mutation* mut = new Schedule_mutation();
     Schedule_solution *best_sol = new Schedule_solution(n, m, jobs);
     int best_cost = best_sol->calculate();
@@ -61,7 +66,7 @@ int main(int argc, char *argv[]) {
     // here the main process will answer other processes
     int no_improvement_counter = 0;
     int iters = 0;
-    while (no_improvement_counter < 10) {
+    while (no_improvement_counter < 100) {   // for parallel 10
         char buffer[8192];
         bool improve = false;
         double temp = bolz->get_temp();
@@ -73,6 +78,7 @@ int main(int argc, char *argv[]) {
             std::pair<int, int> rcv = receiving_parser(buffer);
             Schedule_solution *sol = best_sol->clone();
             mut->mutate(*sol, rcv.first, rcv.second);
+            //std::cout << rcv.first << " " << rcv.second << std::endl;
             /*sol->print();
             std::cout << "----------------------" << std::endl;*/
             int sol_cost = sol->calculate();
@@ -95,10 +101,13 @@ int main(int argc, char *argv[]) {
         }
         bolz->cool(iters + 1);
         if (!improve) {
+
+            //std::cout << "here" << std::endl;
+
             ++no_improvement_counter;
         }
         for (int i = 0; i < processors; ++i) {
-            if (no_improvement_counter == 10) {
+            if (no_improvement_counter == 100) {   // for parallel 10
                 mq_send(from, sending_parser(0, 0, 2, buffer), 8192, prio);
                 
                 //std::cout << "serv send 2" << std::endl;
@@ -125,20 +134,28 @@ int main(int argc, char *argv[]) {
 
     std::cout << "Time at all: " << dur.count() << std::endl;
     std::cout << "Minimal result: " << best_sol->calculate() << std::endl;
+    times_results[co] = dur.count();
     
     //std::cout << iters << std::endl;
 
-    std::ofstream results("results_parallel.csv", std::ios::app);
-    if (results.is_open()) {
-        results << n << ", " << m << ", " << dur.count() << ", " << best_sol->calculate() << std::endl;
-        results.close();
-    }
+    
     delete bolz;
     delete mut;
     
     //best_sol->print();
 
     delete best_sol;
+    }
+    double means = 0;
+    for (auto i: times_results) {
+        means += i;
+    }
+    means /= 5;
+    std::ofstream results("results_not_parallel.csv", std::ios::app);
+    if (results.is_open()) {
+        results << n << ", " << m << ", " << means << std::endl;
+        results.close();
+    }
 
     return 0;
 }
