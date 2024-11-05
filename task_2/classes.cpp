@@ -77,7 +77,7 @@ public:
 class Mutation {
 public:
     virtual ~Mutation() = default;
-    virtual void mutate(Schedule_solution& s, int job_ind, int new_proc) = 0;
+    virtual void mutate(Schedule_solution* s, int job_ind, int new_proc) = 0;
     virtual std::pair<int, int> choose(int n, int m) = 0;
 };
 
@@ -95,16 +95,16 @@ public:
         return std::pair(job_ind, new_proc);
     }
     
-    void mutate(Schedule_solution& s, int job_ind, int new_proc) override {
-        int n = s.schedule.size();
-        int m = s.proc_num;
+    void mutate(Schedule_solution* s, int job_ind, int new_proc) override {
+        int n = s->schedule.size();
+        int m = s->proc_num;
         std::vector<int> numbers(m, 0);
         for (int i = 0; i < n; ++i) {
             if (i == job_ind) {
-                s.schedule[i].first = new_proc;
+                s->schedule[i].first = new_proc;
             }
-            s.schedule[i].second = numbers[s.schedule[i].first];
-            ++numbers[s.schedule[i].first];
+            s->schedule[i].second = numbers[s->schedule[i].first];
+            ++numbers[s->schedule[i].first];
         }
     }
 };
@@ -131,7 +131,7 @@ public:
     }
 
     void cool(int iter) override {
-        temp = temp_zero / std::log(1 + iter);
+        temp = (temp_zero / std::log(1 + iter));
     }
 };
 
@@ -185,23 +185,22 @@ public:
 
     	while (true) {
     	    std::pair<int, int> mut = mutation.choose(n, m);
-            char buffer[8192];
-
+            char *buffer = (char *)calloc(8192, sizeof(char));
             //std::cout <<"!" << mut.first << " " << mut.second << std::endl;
 
             mq_send(to, sending_parser(mut.first, mut.second, 1, buffer), 8192, prio);
             
             //std::cout << "client send 1" << std::endl;
 
-            while (mq_receive(from, buffer, 8192, &prio) == -1) {}
+            while (mq_receive(from, buffer, 8192, NULL) == -1) {}
             if (int(buffer[0]) == 2) {
 
                 //std::cout << "client rcvd 2" << std::endl;
 
-                std::destroy_at(buffer);
+                free(buffer);
                 break;
             }
-            std::destroy_at(buffer);
+            free(buffer);
     	}
         exit(0);
     }
@@ -250,7 +249,7 @@ std::pair<int, int> receiving_parser(char *buffer) {
     ++i;
     counter = 1;
     while (int(buffer[i]) != 2) {
-        rcv.second += int(buffer[i] * counter);
+        rcv.second += int(buffer[i]) * counter;
         counter *= 2;
         ++i;
     }

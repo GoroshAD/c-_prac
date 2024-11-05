@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     attr.mq_curmsgs = 0;
 
     std::vector<double> times_results(5);
-    for (int co = 0; co < 5; ++co) {
+    for (int co = 0; co < 5; ++co) {   // needed to be 5
 
     //Cooler* bolz = new Bolzman_cooler(1000.0);
     //Cooler* bolz = new Cauchy_cooler(1000.0);
@@ -67,17 +67,17 @@ int main(int argc, char *argv[]) {
     int no_improvement_counter = 0;
     int iters = 0;
     while (no_improvement_counter < 100) {   // for parallel 10
-        char buffer[8192];
+        char *buffer = (char *)calloc(8192, sizeof(char));
         bool improve = false;
         double temp = bolz->get_temp();
         for (int i = 0; i < processors; ++i) {
-            while (mq_receive(to, buffer, 8192, &prio) == -1) {}
+            while (mq_receive(to, buffer, 8192, NULL) == -1) {}
 
             //std::cout << "serv received 1" << std::endl;
 
             std::pair<int, int> rcv = receiving_parser(buffer);
             Schedule_solution *sol = best_sol->clone();
-            mut->mutate(*sol, rcv.first, rcv.second);
+            mut->mutate(sol, rcv.first, rcv.second);
             //std::cout << rcv.first << " " << rcv.second << std::endl;
             /*sol->print();
             std::cout << "----------------------" << std::endl;*/
@@ -85,9 +85,9 @@ int main(int argc, char *argv[]) {
 
             //std::cout << i <<"th processor" << std::endl;
 
-    	    double accept_prob = exp((best_cost - sol_cost) / temp);
+    	    double accept_prob = exp(best_cost - sol_cost / temp);
             double x;
-    	    if (sol_cost < best_cost || accept_prob > (x = ((double)rand() / RAND_MAX))) {
+            if (best_cost != sol_cost && (sol_cost < best_cost || accept_prob > (x = ((double)rand() / RAND_MAX)))) {
 
                 //std::cout << sol_cost << " " << best_cost << " " << accept_prob << " " << x << std::endl;
 
@@ -95,9 +95,8 @@ int main(int argc, char *argv[]) {
     	        best_sol = sol->clone();
     	        best_cost = sol_cost;
                 improve = true;
-    	    } else {
-    	        delete sol;
     	    }
+    	    delete sol;
         }
         bolz->cool(iters + 1);
         if (!improve) {
@@ -105,7 +104,12 @@ int main(int argc, char *argv[]) {
             //std::cout << "here" << std::endl;
 
             ++no_improvement_counter;
+        } else {
+            no_improvement_counter = 0;
         }
+
+        //std::cout << no_improvement_counter << " " << bolz->get_temp() << std::endl;
+        
         for (int i = 0; i < processors; ++i) {
             if (no_improvement_counter == 100) {   // for parallel 10
                 mq_send(from, sending_parser(0, 0, 2, buffer), 8192, prio);
@@ -119,7 +123,7 @@ int main(int argc, char *argv[]) {
 
             }
         }
-        std::destroy_at(buffer);
+        free(buffer);
         ++iters;
     }
     std::chrono::duration<double> dur = std::chrono::high_resolution_clock::now() - start;
