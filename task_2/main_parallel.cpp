@@ -40,7 +40,8 @@ int main(int argc, char *argv[]) {
     for (int co = 0; co < 5; ++co) {
     processors = pr;
 
-    Cooler* bolz = new Bolzman_cooler(1000.0);
+    Cooler* bolz = new Cauchy_cooler(1000.0);
+    
     Mutation* mut = new Schedule_mutation();
     Schedule_solution *init_sol = new Schedule_solution(n, m, jobs);
     Schedule_solution *best_sol = init_sol->clone();
@@ -69,7 +70,7 @@ int main(int argc, char *argv[]) {
     int no_improvement_counter = 0;
     int iters = 0;
     while (no_improvement_counter < 10) {   // for parallel 10
-        char buffer[8192];
+        char *buffer = (char *)calloc(8192, sizeof(char));
         bool improve = false;
         double temp = bolz->get_temp();
         for (int i = 0; i < processors; ++i) {
@@ -79,7 +80,7 @@ int main(int argc, char *argv[]) {
 
             std::pair<int, int> rcv = receiving_parser(buffer);
             Schedule_solution *sol = best_sol->clone();
-            mut->mutate(*sol, rcv.first, rcv.second);
+            mut->mutate(sol, rcv.first, rcv.second);
             //std::cout << rcv.first << " " << rcv.second << std::endl;
             /*sol->print();
             std::cout << "----------------------" << std::endl;*/
@@ -97,9 +98,8 @@ int main(int argc, char *argv[]) {
     	        best_sol = sol->clone();
     	        best_cost = sol_cost;
                 improve = true;
-    	    } else {
-    	        delete sol;
     	    }
+    	    delete sol;
         }
         bolz->cool(iters + 1);
         if (!improve) {
@@ -107,6 +107,8 @@ int main(int argc, char *argv[]) {
             //std::cout << "here" << std::endl;
 
             ++no_improvement_counter;
+        } else {
+            no_improvement_counter = 0;
         }
         for (int i = 0; i < processors; ++i) {
             if (no_improvement_counter == 10) {   // for parallel 10
@@ -121,7 +123,7 @@ int main(int argc, char *argv[]) {
 
             }
         }
-        std::destroy_at(buffer);
+        free(buffer);
         ++iters;
     }
     std::chrono::duration<double> dur = std::chrono::high_resolution_clock::now() - start;

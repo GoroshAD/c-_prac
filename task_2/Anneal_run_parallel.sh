@@ -1,4 +1,4 @@
 #! /bin/bash
 
-./main_parallel 100000 3000 1
-./main_parallel 5000 200 1
+./main_parallel 25000 1500 1
+./main_parallel 200 15 1
