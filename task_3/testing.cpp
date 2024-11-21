@@ -17,7 +17,6 @@ class Oper : public testing::Test{};
 // f(x), f'(x) and to_string(f(x)))
 TEST_F(Func, Identity_function)
 {
-    //SCOPED_TRACE("Identity function test");
     auto f = factory.create("ident");
     ASSERT_DOUBLE_EQ(f->evaluate(1.0), 1.0);
     ASSERT_DOUBLE_EQ(f->derivate(2.0), 1.0);
@@ -26,7 +25,6 @@ TEST_F(Func, Identity_function)
 
 TEST_F(Func, Const_function)
 {
-    //SCOPED_TRACE("Constant function test");
     auto f = factory.create("const", 2.0);
     ASSERT_DOUBLE_EQ(f->evaluate(1.0), 2.0);
     ASSERT_DOUBLE_EQ(f->derivate(2.0), 0.0);
@@ -35,7 +33,6 @@ TEST_F(Func, Const_function)
 
 TEST_F(Func, Power_function)
 {
-    //SCOPED_TRACE("Power function test");
     auto f = factory.create("power", 3.0);
     ASSERT_DOUBLE_EQ(f->evaluate(2.0), 8.0);
     ASSERT_DOUBLE_EQ(f->derivate(2.0), 12.0);
@@ -44,7 +41,6 @@ TEST_F(Func, Power_function)
 
 TEST_F(Func, Exponent_function)
 {
-    //SCOPED_TRACE("Exponent function test");
     auto f = factory.create("exp");
     ASSERT_DOUBLE_EQ(f->evaluate(4.0), std::exp(4.0));
     ASSERT_DOUBLE_EQ(f->derivate(2.0), std::exp(2.0));
@@ -53,7 +49,6 @@ TEST_F(Func, Exponent_function)
 
 TEST_F(Func, Polynomial_function)
 {
-    //SCOPED_TRACE("Polynomial function test");
     auto f = factory.create("polynomial", {7.0, 0.0, 3.0, 15.0});
     ASSERT_DOUBLE_EQ(f->evaluate(10.0), 15307.0);
     ASSERT_DOUBLE_EQ(f->derivate(10.0), 4560.0);
@@ -64,14 +59,12 @@ TEST_F(Func, Polynomial_function)
 // errors
 TEST_F(Func, Power_eval_zero)   // 0 in negative
 {
-    //SCOPED_TRACE("Zero negative power test");
     auto f = factory.create("power", -2.0);
     ASSERT_THROW(f->evaluate(0.0), std::invalid_argument);
 }
 
 TEST_F(Func, Power_deriv_zero)   // 0 in non-positive from derivate
 {
-    //SCOPED_TRACE("Zero non-positive power derivate test");
     auto f = factory.create("power", 1.0);
     ASSERT_THROW(f->derivate(0.0), std::invalid_argument);
 }
