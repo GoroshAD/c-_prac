@@ -35,120 +35,119 @@ int main(int argc, char *argv[]) {
     attr.mq_curmsgs = 0;
 
     std::vector<double> times_results(5);
-    for (int co = 0; co < 5; ++co) {   // needed to be 5
+    for (int co = 0; co < 5; ++co) {   // needed to be 5 for experiments
 
-    //Cooler* bolz = new Bolzman_cooler(1000.0);
-    //Cooler* bolz = new Cauchy_cooler(1000.0);
-    Cooler* bolz = new Third_cooler(1000.0);
-    Mutation* mut = new Schedule_mutation();
-    Schedule_solution *best_sol = new Schedule_solution(n, m, jobs);
-    int best_cost = best_sol->calculate();
+        //Cooler* bolz = new Bolzman_cooler(100.0);
+        Cooler* bolz = new Cauchy_cooler(100.0);  //was 1000.0
+        //Cooler* bolz = new Third_cooler(100.0);  //was 1000.0
+        Mutation* mut = new Schedule_mutation();
+        Schedule_solution *best_sol = new Schedule_solution(n, m, jobs);
+        int best_cost = best_sol->calculate();
 
-    std::cout << best_cost << std::endl;
+        std::cout << best_cost << std::endl;
 
-    Annealing anneal = Annealing();
-    auto start = std::chrono::high_resolution_clock::now();
+        Annealing anneal = Annealing();
+        auto start = std::chrono::high_resolution_clock::now();
 
-    std::vector<pid_t> pids(processors);
-    for (int i = 0; i < processors; ++i) {
-        pid_t tmp = fork();
-        if (tmp == 0) {   // son is here
-            anneal.run(n, m);
-        } else {
-            pids[i] = tmp;
-        }
-    }
-    // open messages queues
-    mqd_t from = mq_open(from_main, O_CREAT|O_WRONLY, 0777, &attr);
-    mqd_t to = mq_open(to_main, O_CREAT|O_RDONLY, 0777, &attr);
-    //std::cout << to << " " << from << std::endl;
-
-    // here the main process will answer other processes
-    int no_improvement_counter = 0;
-    int iters = 0;
-    while (no_improvement_counter < 100) {   // for parallel 10
-        char *buffer = (char *)calloc(8192, sizeof(char));
-        bool improve = false;
-        double temp = bolz->get_temp();
+        std::vector<pid_t> pids(processors);
         for (int i = 0; i < processors; ++i) {
-            while (mq_receive(to, buffer, 8192, NULL) == -1) {}
-
-            //std::cout << "serv received 1" << std::endl;
-
-            std::pair<int, int> rcv = receiving_parser(buffer);
-            Schedule_solution *sol = best_sol->clone();
-            mut->mutate(sol, rcv.first, rcv.second);
-            //std::cout << rcv.first << " " << rcv.second << std::endl;
-            /*sol->print();
-            std::cout << "----------------------" << std::endl;*/
-            int sol_cost = sol->calculate();
-
-            //std::cout << i <<"th processor" << std::endl;
-
-    	    double accept_prob = exp(best_cost - sol_cost / temp);
-            double x;
-            if (best_cost != sol_cost && (sol_cost < best_cost || accept_prob > (x = ((double)rand() / RAND_MAX)))) {
-
-                //std::cout << sol_cost << " " << best_cost << " " << accept_prob << " " << x << std::endl;
-
-    	        delete best_sol;
-    	        best_sol = sol->clone();
-    	        best_cost = sol_cost;
-                improve = true;
-    	    }
-    	    delete sol;
-        }
-        bolz->cool(iters + 1);
-        if (!improve) {
-
-            //std::cout << "here" << std::endl;
-
-            ++no_improvement_counter;
-        } else {
-            no_improvement_counter = 0;
-        }
-
-        //std::cout << no_improvement_counter << " " << bolz->get_temp() << std::endl;
-        
-        for (int i = 0; i < processors; ++i) {
-            if (no_improvement_counter == 100) {   // for parallel 10
-                mq_send(from, sending_parser(0, 0, 2, buffer), 8192, prio);
-                
-                //std::cout << "serv send 2" << std::endl;
-
+            pid_t tmp = fork();
+            if (tmp == 0) {   // son is here
+                anneal.run(n, m);
             } else {
-                mq_send(from, sending_parser(0, 0, 1, buffer), 8192, prio);
-                
-                //std::cout << "serv send 1" << std::endl;
-
+                pids[i] = tmp;
             }
         }
-        free(buffer);
-        ++iters;
-    }
-    std::chrono::duration<double> dur = std::chrono::high_resolution_clock::now() - start;
-    sleep(1);
-    for (int i = 0; i < processors; ++i) {
-        kill(pids[i], SIGTERM);
-        wait(NULL);
-    }
+        // open messages queues
+        mqd_t from = mq_open(from_main, O_CREAT|O_WRONLY, 0777, &attr);
+        mqd_t to = mq_open(to_main, O_CREAT|O_RDONLY, 0777, &attr);
+        //std::cout << to << " " << from << std::endl;
 
-    mq_close(to);
-    mq_close(from);
+        // here the main process will answer other processes
+        int no_improvement_counter = 0;
+        int iters = 1;
+        while (no_improvement_counter < 100) {   // for parallel 10
+            char *buffer = (char *)calloc(8192, sizeof(char));
+            bool improve = false;
+            double temp = bolz->get_temp();
+            for (int i = 0; i < processors; ++i) {
+                while (mq_receive(to, buffer, 8192, NULL) == -1) {}
 
-    std::cout << "Time at all: " << dur.count() << std::endl;
-    std::cout << "Minimal result: " << best_sol->calculate() << std::endl;
-    times_results[co] = dur.count();
-    
-    //std::cout << iters << std::endl;
+                //std::cout << "serv received 1" << std::endl;
 
-    
-    delete bolz;
-    delete mut;
-    
-    //best_sol->print();
+                std::pair<int, int> rcv = receiving_parser(buffer);
+                Schedule_solution *sol = best_sol->clone();
+                mut->mutate(sol, rcv.first, rcv.second);
+                //std::cout << rcv.first << " " << rcv.second << std::endl;
+                /*sol->print();
+                std::cout << "----------------------" << std::endl;*/
+                int sol_cost = sol->calculate();
 
-    delete best_sol;
+                //std::cout << i <<"th processor" << std::endl;
+
+                double accept_prob = exp((best_cost - sol_cost) / temp);
+                double x;
+                if (sol_cost != best_cost && (sol_cost < best_cost || accept_prob > (x = ((double)rand() / RAND_MAX)))) {
+
+                    //std::cout << sol_cost << " " << best_cost << " " << accept_prob << " " << x << std::endl;
+
+                    delete best_sol;
+                    best_sol = sol->clone();
+                    best_cost = sol_cost;
+                    improve = true;
+                }
+                delete sol;
+            }
+            bolz->cool(iters + 1);
+            if (!improve) {
+
+                //std::cout << "here" << std::endl;
+
+                ++no_improvement_counter;
+            } else {
+                no_improvement_counter = 0;
+            }
+
+            //std::cout << no_improvement_counter << " " << bolz->get_temp() << std::endl;
+            
+            for (int i = 0; i < processors; ++i) {
+                if (no_improvement_counter == 100) {   // for parallel 10
+                    mq_send(from, sending_parser(0, 0, 2, buffer), 8192, prio);
+                    
+                    //std::cout << "serv send 2" << std::endl;
+
+                } else {
+                    mq_send(from, sending_parser(0, 0, 1, buffer), 8192, prio);
+                    
+                    //std::cout << "serv send 1" << std::endl;
+
+                }
+            }
+            free(buffer);
+            ++iters;
+        }
+        std::chrono::duration<double> dur = std::chrono::high_resolution_clock::now() - start;
+        for (int i = 0; i < processors; ++i) {
+            kill(pids[i], SIGTERM);
+            wait(NULL);
+        }
+
+        mq_close(to);
+        mq_close(from);
+
+        std::cout << "Time at all: " << dur.count() << std::endl;
+        std::cout << "Minimal result: " << best_sol->calculate() << std::endl;
+        times_results[co] = dur.count();
+        
+        //std::cout << iters << std::endl;
+
+        
+        delete bolz;
+        delete mut;
+        
+        //best_sol->print();
+
+        delete best_sol;
     }
     double means = 0;
     for (auto i: times_results) {
