@@ -294,9 +294,9 @@ public:
 
 
 //--------------------------functions-----------------------------------------
-double find_equation_root(TFunction_ptr &eq, double x=0, double error=1e-6, double step=0.01)
+double find_equation_root(TFunction_ptr &eq, int iters=100000, double x=0, double error=1e-6, double step=0.01)
 {
-    for (int i = 0; i < 100000; ++i) {
+    for (int i = 0; i < iters; ++i) {
         if (std::abs(eq->evaluate(x)) < error) {
             return x;
         }
