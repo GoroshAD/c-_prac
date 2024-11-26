@@ -26,8 +26,5 @@ main()
 
     auto y = factory.create("polynomial", {1, -2, 1});
     std::cout << "Root for " << y->to_string() << " is in x = " << find_equation_root(y) << std::endl;
-
-    auto exam = factory.create("polynomial", {7.0, 0.0, 3.0, 15.0});
-    std::cout << "Root for " << exam->to_string() << " is in x = " << find_equation_root(exam) << std::endl;
     return 0;
 }

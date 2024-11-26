@@ -259,7 +259,7 @@ TFunction_ptr operator/(TFunction_ptr a, TFunction_ptr b) {
 
 class Factory {
 public:
-    TFunction_ptr create(const std::string& type, double param) {
+    TFunction_ptr create(const std::string& type, double param=0) {
         switch (type2int[type]) {
             case 0:
                 return std::make_shared<Identity>();
@@ -274,7 +274,7 @@ public:
         }
     }
 
-     TFunction_ptr create(const std::string& type, const std::vector<double>& coefs={}) {
+     TFunction_ptr create(const std::string& type, const std::vector<double>& coefs) {
         switch (type2int[type]) {
             case 4:
                 return std::make_shared<Polynomial>(coefs);
@@ -288,13 +288,13 @@ public:
 
 
 //--------------------------functions-----------------------------------------
-double find_equation_root(TFunction_ptr &eq, int iters=100000, double x=0, double error=1e-6, double step=0.01)
+double find_equation_root(TFunction_ptr &eq, double x=0, int iters=100000, double error=1e-6)   // Newton
 {
     for (int i = 0; i < iters; ++i) {
         if (std::abs(eq->evaluate(x)) < error || std::abs(eq->derivate(x)) < 1e-10) {   // if f(x) in error or f'(x) is too small
             return x;
         }
-        x = x - step * eq->evaluate(x) / eq->derivate(x);
+        x = x - eq->evaluate(x) / eq->derivate(x);
     }
     return x;
 }
