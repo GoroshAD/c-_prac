@@ -12,11 +12,6 @@
 
 //----------------------------------------------------------------------------
 class TFunction;
-class Identity;
-class Const;
-class Power;
-class Exponent;
-class Polynomial;
 class Factory;
 using TFunction_ptr = std::shared_ptr<TFunction>;
 std::unordered_map<std::string, int> type2int = {{"ident", 0},
@@ -40,8 +35,6 @@ public:
     double operator()(double x) const {
         return evaluate(x);
     }
-    
-    static TFunction_ptr create(const std::string& type, double param=0.0, const std::vector<double>& coefs={});
 };
 
 class Identity : public TFunction {
@@ -160,22 +153,7 @@ public:
     }
 };
 
-TFunction_ptr TFunction::create(const std::string& type, double param, const std::vector<double>& coefs) {
-    switch (type2int[type]) {
-        case 0:
-            return std::make_shared<Identity>();
-        case 1:
-            return std::make_shared<Const>(param);
-        case 2:
-            return std::make_shared<Power>(param);
-        case 3:
-            return std::make_shared<Exponent>();
-        case 4:
-            return std::make_shared<Polynomial>(coefs);
-        default:
-            throw std::logic_error("Unknown function.");
-    }
-}
+
 
 class Addition : public TFunction {
 private:
@@ -281,13 +259,29 @@ TFunction_ptr operator/(TFunction_ptr a, TFunction_ptr b) {
 
 class Factory {
 public:
-    TFunction_ptr create(const std::string& type, double param=0) const {
-        return TFunction::create(type, param);
+    TFunction_ptr create(const std::string& type, double param) {
+        switch (type2int[type]) {
+            case 0:
+                return std::make_shared<Identity>();
+            case 1:
+                return std::make_shared<Const>(param);
+            case 2:
+                return std::make_shared<Power>(param);
+            case 3:
+                return std::make_shared<Exponent>();
+            default:
+                throw std::logic_error("Unknown function.");
+        }
     }
 
-    TFunction_ptr create(const std::string& type, const std::vector<double>& coefs) const {
-        return TFunction::create(type, 0, coefs);
-	}
+     TFunction_ptr create(const std::string& type, const std::vector<double>& coefs={}) {
+        switch (type2int[type]) {
+            case 4:
+                return std::make_shared<Polynomial>(coefs);
+            default:
+                throw std::logic_error("Unknown function.");
+        }
+    }
 };
 //----------------------------------------------------------------------------
 
@@ -297,10 +291,7 @@ public:
 double find_equation_root(TFunction_ptr &eq, int iters=100000, double x=0, double error=1e-6, double step=0.01)
 {
     for (int i = 0; i < iters; ++i) {
-        if (std::abs(eq->evaluate(x)) < error) {
-            return x;
-        }
-        if (std::abs(eq->derivate(x)) < 1e-10) {   // too small
+        if (std::abs(eq->evaluate(x)) < error || std::abs(eq->derivate(x)) < 1e-10) {   // if f(x) in error or f'(x) is too small
             return x;
         }
         x = x - step * eq->evaluate(x) / eq->derivate(x);
